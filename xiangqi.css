@@ -1,0 +1,13 @@
+.clearFix {
+    clear: both;
+}
+
+.board {
+    box-sizing: content-box;
+}
+
+.square {
+    float: left;
+    position: relative;
+    border: 1px solid black;
+}
