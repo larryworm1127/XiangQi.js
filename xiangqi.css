@@ -9,5 +9,40 @@
 .square {
     float: left;
     position: relative;
-    border: 1px solid black;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+.square-no-border {
+    float: left;
+    position: relative;
+    border-right: 1px solid transparent;
+    border-bottom: 1px solid black;
+}
+
+.square-top-row {
+    float: left;
+    position: relative;
+    border-top: 2px solid black;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+.square-bottom-row {
+    float: left;
+    position: relative;
+    border-bottom: 2px solid black;
+    border-right: 1px solid black;
+}
+
+.square-left-col {
+    float: left;
+    position: relative;
+    border-left: 2px solid black;
+}
+
+.square-right-col {
+    float: left;
+    position: relative;
+    border-right: 2px solid black;
 }
