@@ -17,9 +17,14 @@ const CSS = {
 
 
 // Main library function
-const XiangQi = function (containerId) {
+const XiangQi = function (containerId, boardSize) {
 
   const _self = {};
+
+  const constructor = () => {
+
+  }
+  _self.boardSize = boardSize
   _self.containerId = containerId;
   _self.containerElement = document.querySelector(`#${containerId}`);
   _self.board = [];
