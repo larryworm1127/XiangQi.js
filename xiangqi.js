@@ -2,6 +2,7 @@
 
 const CSS = {
   board: 'board',
+  boardContainer: 'board-container',
   clearFix: 'clearFix',
   row: 'row',
   square: 'square',
@@ -9,7 +10,9 @@ const CSS = {
   squareBotRow: 'square-bottom-row',
   squareLeftCol: 'square-left-col',
   squareRightCol: 'square-right-col',
-  squareNoBorder: 'square-no-border'
+  squareNoBorder: 'square-no-border',
+  squareWithCrossLeft: 'square-with-cross-left',
+  squareWithCrossRight: 'square-with-cross-right'
 };
 
 
@@ -22,6 +25,7 @@ const XiangQi = function (containerId) {
   _self.board = [];
 
   _self.draw = () => {
+    const boardContainer = createDiv([CSS.boardContainer]);
     const board = createDiv([CSS.board]);
     const squareSize = 48;
 
@@ -38,9 +42,10 @@ const XiangQi = function (containerId) {
       const clearFix = createDiv([CSS.clearFix]);
       row.appendChild(clearFix);
       board.appendChild(row);
+      boardContainer.appendChild(board);
     }
 
-    _self.containerElement.appendChild(board);
+    _self.containerElement.appendChild(boardContainer);
   };
 
   return _self;
@@ -73,8 +78,18 @@ const getSquareClass = (row, col) => {
     case 0:
       classes.push(CSS.squareLeftCol);
       break;
+    case 3:
+      if (row === 0 || row === 7) {
+        classes.push(CSS.squareWithCrossRight);
+      }
+      break;
+    case 5:
+      if (row === 0 || row === 7) {
+        classes.push(CSS.squareWithCrossLeft);
+      }
+      break;
     case 7:
       classes.push(CSS.squareRightCol);
   }
-  return classes
+  return classes;
 };

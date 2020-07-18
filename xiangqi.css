@@ -2,43 +2,74 @@
     clear: both;
 }
 
+.board-container {
+    box-sizing: content-box;
+    width: 402px;
+    height: 452px;
+    margin: 40px;
+    padding: 40px;
+    background: #b35900;
+    border: 3px solid black;
+}
+
 .board {
     box-sizing: content-box;
+    width: 402px;
+    height: 452px;
+    background: #cc9900;
 }
 
 .square {
     float: left;
     position: relative;
-    border-right: 1px solid black;
-    border-bottom: 1px solid black;
+    border-right: 2px solid black;
+    border-bottom: 2px solid black;
 }
 
 .square-no-border {
     float: left;
     position: relative;
-    border-right: 1px solid transparent;
-    border-bottom: 1px solid black;
+    border-right: 2px solid transparent;
+    border-bottom: 2px solid black;
 }
 
 .square-top-row {
     float: left;
     position: relative;
     border-top: 2px solid black;
-    border-right: 1px solid black;
-    border-bottom: 1px solid black;
+    border-right: 2px solid black;
+    border-bottom: 2px solid black;
 }
 
 .square-bottom-row {
     float: left;
     position: relative;
     border-bottom: 2px solid black;
-    border-right: 1px solid black;
+    border-right: 2px solid black;
 }
 
 .square-left-col {
     float: left;
     position: relative;
     border-left: 2px solid black;
+}
+
+.square-with-cross-right:after {
+    content: "";
+    position: absolute;
+    border-top: 1pt solid black;
+    width: 140px;
+    transform: rotate(45deg);
+    transform-origin: 0 0;
+}
+
+.square-with-cross-left:after {
+    content: "";
+    position: absolute;
+    border-top: 1pt solid black;
+    width: 140px;
+    transform: rotate(135deg);
+    transform-origin: 0 0;
 }
 
 .square-right-col {
