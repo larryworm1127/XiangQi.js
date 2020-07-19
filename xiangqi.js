@@ -57,7 +57,11 @@ const XiangQi = function (containerId, boardSize) {
   };
 
   _self.drawPieces = () => {
-
+    _self.board.forEach((item) => {
+      item.forEach((square) => {
+        square.appendChild(createDiv(['piece']))
+      })
+    })
   }
 
   return _self;
