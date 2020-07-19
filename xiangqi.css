@@ -4,8 +4,6 @@
 
 .board-container {
     box-sizing: content-box;
-    width: 402px;
-    height: 452px;
     margin: 40px;
     padding: 40px;
     background: #b35900;
@@ -14,8 +12,6 @@
 
 .board {
     box-sizing: content-box;
-    width: 402px;
-    height: 452px;
     background: #cc9900;
 }
 

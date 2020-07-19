@@ -20,28 +20,31 @@ const CSS = {
 const XiangQi = function (containerId, boardSize) {
 
   const _self = {};
-
-  const constructor = () => {
-
-  }
-  _self.boardSize = boardSize
+  _self.boardWidth = (boardSize === undefined) ? 402 : boardSize;
+  _self.squareSize = (_self.boardWidth - 2) / 8 - 2;
+  _self.boardHeight = (_self.squareSize + 2) * 9 + 2;
+  _self.squareCrossLength = Math.sqrt(Math.pow(_self.squareSize, 2) * 2) * 2;
   _self.containerId = containerId;
   _self.containerElement = document.querySelector(`#${containerId}`);
-  _self.board = [];
+  _self.board = [[], [], [], [], [], [], [], [], []]
 
   _self.draw = () => {
     const boardContainer = createDiv([CSS.boardContainer]);
+    boardContainer.style.width = `${_self.boardWidth}px`;
+    boardContainer.style.height = `${_self.boardHeight}px`;
     const board = createDiv([CSS.board]);
-    const squareSize = 48;
+    board.style.width = _self.boardWidth;
+    board.style.height = _self.boardHeight;
 
     for (let i = 0; i < 9; i++) {
       const row = createDiv([CSS.row]);
 
       for (let j = 0; j < 8; j++) {
         const square = createDiv(getSquareClass(i, j));
-        square.style.width = `${squareSize}px`;
-        square.style.height = `${squareSize}px`;
+        square.style.width = `${_self.squareSize}px`;
+        square.style.height = `${_self.squareSize}px`;
         row.appendChild(square);
+        _self.board[i].push(square);
       }
 
       const clearFix = createDiv([CSS.clearFix]);
@@ -52,6 +55,10 @@ const XiangQi = function (containerId, boardSize) {
 
     _self.containerElement.appendChild(boardContainer);
   };
+
+  _self.drawPieces = () => {
+
+  }
 
   return _self;
 };
