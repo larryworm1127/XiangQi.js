@@ -6,45 +6,81 @@ const CSS = {
   clearFix: 'clearFix',
   row: 'row',
   square: 'square',
+  crossLeft: 'cross-left',
+  crossRight: 'cross-right',
   squareTopRow: 'square-top-row',
   squareBotRow: 'square-bottom-row',
   squareLeftCol: 'square-left-col',
   squareRightCol: 'square-right-col',
   squareNoBorder: 'square-no-border',
-  squareWithCrossLeft: 'square-with-cross-left',
-  squareWithCrossRight: 'square-with-cross-right'
 };
 
+const RIGHT_CROSS_LEFT_RATIO = -1.4375;
+const RIGHT_CROSS_TOP_RATIO = 0.583;
+const LEFT_CROSS_LEFT_RATIO = -3.55;
+const LEFT_CROSS_TOP_RATIO = -1.468;
 
-// Main library function
-const XiangQi = function (containerId, boardSize) {
 
-  const _self = {};
-  _self.boardWidth = (boardSize === undefined) ? 402 : boardSize;
-  _self.squareSize = (_self.boardWidth - 2) / 8 - 2;
-  _self.boardHeight = (_self.squareSize + 2) * 9 + 2;
-  _self.squareCrossLength = Math.sqrt(Math.pow(_self.squareSize, 2) * 2) * 2;
-  _self.containerId = containerId;
-  _self.containerElement = document.querySelector(`#${containerId}`);
-  _self.board = [[], [], [], [], [], [], [], [], []]
+class Draw {
+  createSquareDom = function (row, col) {
+    const square = document.createElement('div');
+    square.style.width = `${this.squareSize}px`;
+    square.style.height = `${this.squareSize}px`;
+    square.classList.add(...getSquareClass(row, col));
 
-  _self.draw = () => {
+    if (col === 3 && (row === 0 || row === 7)) {
+      const cross = document.createElement('div');
+      cross.style.width = `${this.squareCrossLength}px`;
+      cross.style.height = `${this.squareCrossLength}px`;
+      cross.style.top = `${this.squareSize * RIGHT_CROSS_TOP_RATIO}px`;
+      cross.style.left = `${this.squareSize * RIGHT_CROSS_LEFT_RATIO}px`;
+      cross.className = CSS.crossRight;
+      square.appendChild(cross);
+    }
+
+    if (col === 5 && (row === 0 || row === 7)) {
+      const cross = document.createElement('div');
+      cross.style.width = `${this.squareCrossLength}px`;
+      cross.style.height = `${this.squareCrossLength}px`;
+      cross.style.top = `${this.squareSize * LEFT_CROSS_TOP_RATIO}px`;
+      cross.style.left = `${this.squareSize * LEFT_CROSS_LEFT_RATIO}px`;
+      cross.className = CSS.crossLeft;
+      square.appendChild(cross);
+    }
+
+    return square;
+  };
+}
+
+
+class XiangQi extends Draw {
+
+  constructor(containerId, boardSize) {
+    super();
+    this.boardWidth = (boardSize === undefined) ? 402 : boardSize;
+    this.squareSize = (this.boardWidth - 2) / 8 - 2;
+    this.boardHeight = (this.squareSize + 2) * 9 + 2;
+    this.squareCrossLength = Math.sqrt(Math.pow(this.squareSize, 2) * 2) * 2 + 3;
+    this.containerId = containerId;
+    this.containerElement = document.querySelector(`#${containerId}`);
+    this.board = [[], [], [], [], [], [], [], [], []];
+  }
+
+  draw = function () {
     const boardContainer = createDiv([CSS.boardContainer]);
-    boardContainer.style.width = `${_self.boardWidth}px`;
-    boardContainer.style.height = `${_self.boardHeight}px`;
+    boardContainer.style.width = `${this.boardWidth}px`;
+    boardContainer.style.height = `${this.boardHeight}px`;
     const board = createDiv([CSS.board]);
-    board.style.width = _self.boardWidth;
-    board.style.height = _self.boardHeight;
+    board.style.width = this.boardWidth;
+    board.style.height = this.boardHeight;
 
     for (let i = 0; i < 9; i++) {
       const row = createDiv([CSS.row]);
 
       for (let j = 0; j < 8; j++) {
-        const square = createDiv(getSquareClass(i, j));
-        square.style.width = `${_self.squareSize}px`;
-        square.style.height = `${_self.squareSize}px`;
+        const square = this.createSquareDom(i, j);
         row.appendChild(square);
-        _self.board[i].push(square);
+        this.board[i].push(square);
       }
 
       const clearFix = createDiv([CSS.clearFix]);
@@ -53,20 +89,17 @@ const XiangQi = function (containerId, boardSize) {
       boardContainer.appendChild(board);
     }
 
-    _self.containerElement.appendChild(boardContainer);
+    this.containerElement.appendChild(boardContainer);
   };
 
-  _self.drawPieces = () => {
-    _self.board.forEach((item) => {
+  drawPieces = function () {
+    this.board.forEach((item) => {
       item.forEach((square) => {
-        square.appendChild(createDiv(['piece']))
-      })
-    })
-  }
-
-  return _self;
-};
-
+        square.appendChild(createDiv(['piece']));
+      });
+    });
+  };
+}
 
 const createDiv = (className) => {
   const element = document.createElement('div');
@@ -93,16 +126,6 @@ const getSquareClass = (row, col) => {
   switch (col) {
     case 0:
       classes.push(CSS.squareLeftCol);
-      break;
-    case 3:
-      if (row === 0 || row === 7) {
-        classes.push(CSS.squareWithCrossRight);
-      }
-      break;
-    case 5:
-      if (row === 0 || row === 7) {
-        classes.push(CSS.squareWithCrossLeft);
-      }
       break;
     case 7:
       classes.push(CSS.squareRightCol);

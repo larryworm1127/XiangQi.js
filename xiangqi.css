@@ -50,22 +50,20 @@
     border-left: 2px solid black;
 }
 
-.square-with-cross-right:after {
-    content: "";
-    position: absolute;
-    border-top: 1pt solid black;
-    width: 140px;
-    transform: rotate(45deg);
-    transform-origin: 0 0;
+.cross-left {
+    border-top: 1px solid black;
+    height:100px;
+    position: relative;
+    transform: rotate(135deg);
+    left: -340px;
+    top: -140px;
 }
 
-.square-with-cross-left:after {
-    content: "";
-    position: absolute;
-    border-top: 1pt solid black;
-    width: 140px;
-    transform: rotate(135deg);
-    transform-origin: 0 0;
+.cross-right {
+    border-top: 1px solid black;
+    height:100px;
+    position: relative;
+    transform: rotate(45deg);
 }
 
 .square-right-col {
