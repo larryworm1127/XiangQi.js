@@ -27,19 +27,49 @@ const SIDES = {
   black: 'b'
 };
 
+// Board content objects
+function Position(row, column) {
+  return { row: row, column: column };
+}
 
-function XiangQi(containerId, boardSize) {
+function PiecesPos(
+  general,
+  advisor,
+  elephant,
+  cannon,
+  chariot,
+  horse,
+  soldier
+) {
+  return {
+    general: [...general],
+    advisor: [...advisor],
+    elephant: [...elephant],
+    cannon: [...chariot],
+    horse: [...horse],
+    soldier: [...soldier]
+  };
+}
+
+function Side(redPiecesPos, blackPiecesPos) {
+  return { red: redPiecesPos, black: blackPiecesPos };
+}
+
+
+// Main library function
+function XiangQi(containerId, boardSize, boardContent) {
   this.boardWidth = (boardSize === undefined) ? 400 : boardSize;
-  this.squareSize = this.getSquareSize();
+  this.squareSize = (this.boardWidth - 2) / NUM_COLS;
   this.boardHeight = (this.boardWidth / 9) * 10;
   this.containerElement = document.querySelector(`#${containerId}`);
   this.board = [[], [], [], [], [], [], [], [], [], []];
+
+  this.drawBoard();
 }
 
 
 XiangQi.prototype = {
-
-  draw: function () {
+  drawBoard: function () {
     const boardContainer = createDiv([CSS.boardContainer]);
     const board = createDiv([CSS.board]);
     board.style.width = `${this.boardWidth}px`;
@@ -65,6 +95,16 @@ XiangQi.prototype = {
     this.containerElement.appendChild(boardContainer);
   },
 
+  drawBoardContent: function (boardContent) {
+    Object.entries(boardContent).forEach(([side, pieces]) => {
+      Object.entries(pieces).forEach(([piece, positions]) => {
+        positions.forEach((position) => {
+          this.drawPieces(position.row, position.column, piece, side);
+        });
+      });
+    });
+  },
+
   drawPieces: function (row, col, piece, side) {
     const pieceElement = document.createElement('img');
     pieceElement.src = `${PIECE_PATH}${SIDES[side]}${PIECES[piece]}`;
@@ -73,15 +113,38 @@ XiangQi.prototype = {
     this.board[row][col].appendChild(pieceElement);
   },
 
-  getSquareSize: function () {
-    let boardWidthContainer = this.boardWidth - 1;
+  drawStartPosition: function () {
+    this.drawBoardContent(this.getStartPosition());
+  },
 
-    while (boardWidthContainer % NUM_COLS !== 0 && boardWidthContainer > 0) {
-      boardWidthContainer = boardWidthContainer - 1;
-    }
+  // ======================================================================
+  // Utility functions
+  // ======================================================================
+  cleanUpConfig: function () {
 
-    return boardWidthContainer / NUM_COLS;
-  }
+  },
+
+  getStartPosition: function () {
+    const redPosition = PiecesPos(
+      [Position(0, 4)],
+      [Position(0, 3), Position(0, 5)],
+      [Position(0, 2), Position(0, 6)],
+      [Position(2, 1), Position(2, 7)],
+      [Position(0, 0), Position(0, 8)],
+      [Position(0, 1), Position(0, 7)],
+      [Position(3, 0), Position(3, 2), Position(3, 4), Position(3, 6), Position(3, 8)]
+    );
+    const blackPositions = PiecesPos(
+      [Position(9, 4)],
+      [Position(9, 3), Position(9, 5)],
+      [Position(9, 2), Position(9, 6)],
+      [Position(7, 1), Position(7, 7)],
+      [Position(9, 0), Position(9, 8)],
+      [Position(9, 1), Position(9, 7)],
+      [Position(6, 0), Position(6, 2), Position(6, 4), Position(6, 6), Position(6, 8)]
+    );
+    return Side(redPosition, blackPositions);
+  },
 };
 
 const createDiv = (className) => {
