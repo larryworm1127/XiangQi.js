@@ -51,12 +51,10 @@
 }
 
 .cross-left {
-    border-top: 1px solid black;
+    border-left: 1px solid black;
     height:100px;
     position: relative;
-    transform: rotate(135deg);
-    left: -340px;
-    top: -140px;
+    transform: rotate(45deg);
 }
 
 .cross-right {

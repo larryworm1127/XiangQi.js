@@ -15,39 +15,39 @@ const CSS = {
   squareNoBorder: 'square-no-border',
 };
 
-const RIGHT_CROSS_LEFT_RATIO = -1.4375;
-const RIGHT_CROSS_TOP_RATIO = 0.583;
-const LEFT_CROSS_LEFT_RATIO = -3.55;
-const LEFT_CROSS_TOP_RATIO = -1.468;
+const CROSS_LEFT_RATIO = -1.4375;
+const CROSS_TOP_RATIO = 0.583;
 
 
 class Draw {
+
   createSquareDom = function (row, col) {
     const square = document.createElement('div');
     square.style.width = `${this.squareSize}px`;
     square.style.height = `${this.squareSize}px`;
     square.classList.add(...getSquareClass(row, col));
 
+    // Draw right cross
     if (col === 3 && (row === 0 || row === 7)) {
       const cross = document.createElement('div');
       cross.style.width = `${this.squareCrossLength}px`;
       cross.style.height = `${this.squareCrossLength}px`;
-      cross.style.top = `${this.squareSize * RIGHT_CROSS_TOP_RATIO}px`;
-      cross.style.left = `${this.squareSize * RIGHT_CROSS_LEFT_RATIO}px`;
+      cross.style.top = `${this.squareSize * CROSS_TOP_RATIO}px`;
+      cross.style.left = `${this.squareSize * CROSS_LEFT_RATIO}px`;
       cross.className = CSS.crossRight;
       square.appendChild(cross);
     }
 
+    // Draw left cross
     if (col === 5 && (row === 0 || row === 7)) {
       const cross = document.createElement('div');
       cross.style.width = `${this.squareCrossLength}px`;
       cross.style.height = `${this.squareCrossLength}px`;
-      cross.style.top = `${this.squareSize * LEFT_CROSS_TOP_RATIO}px`;
-      cross.style.left = `${this.squareSize * LEFT_CROSS_LEFT_RATIO}px`;
+      cross.style.left = `${this.squareSize * CROSS_LEFT_RATIO}px`;
+      cross.style.top = `${this.squareSize * CROSS_TOP_RATIO}px`;
       cross.className = CSS.crossLeft;
       square.appendChild(cross);
     }
-
     return square;
   };
 }
@@ -61,7 +61,6 @@ class XiangQi extends Draw {
     this.squareSize = (this.boardWidth - 2) / 8 - 2;
     this.boardHeight = (this.squareSize + 2) * 9 + 2;
     this.squareCrossLength = Math.sqrt(Math.pow(this.squareSize, 2) * 2) * 2 + 3;
-    this.containerId = containerId;
     this.containerElement = document.querySelector(`#${containerId}`);
     this.board = [[], [], [], [], [], [], [], [], []];
   }
