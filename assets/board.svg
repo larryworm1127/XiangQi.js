@@ -10,6 +10,30 @@
   <rect x="50" y="50" width="800" height="900" stroke="#000" stroke-width="4" fill="#cc9900"/>
 
   <!-- ========================================================= -->
+  <!-- Board other lines -->
+  <!-- ========================================================= -->
+  <defs>
+    <g id="cross">
+      <line x1="300" y1="0" x2="500" y2="200" stroke="#000" stroke-width="4"/>
+      <line x1="300" y1="200" x2="500" y2="0" stroke="#000" stroke-width="4"/>
+    </g>
+
+    <g id="rightAngleLineHalfRight">
+      <polygon points="8,38 12,38 12,12 38,12 38,8 8,8"/>
+      <polygon points="8,-38 12,-38 12,-12 38,-12 38,-8 8,-8"/>
+    </g>
+
+    <g id="rightAngleLineHalfLeft">
+      <use href="#rightAngleLineHalfRight" transform="scale(-1)" width="100%" height="100%"/>
+    </g>
+
+    <g id="rightAngleLineFull">
+      <use href="#rightAngleLineHalfRight" width="100%" height="100%"/>
+      <use href="#rightAngleLineHalfLeft" width="100%" height="100%"/>
+    </g>
+  </defs>
+
+  <!-- ========================================================= -->
   <!-- Board squares -->
   <!-- ========================================================= -->
   <defs>
@@ -32,10 +56,25 @@
     </g>
 
     <g id="half">
+      <!-- 4 rows -->
       <use href="#row" y="0" width="100%" height="100%"/>
       <use href="#row" y="100" width="100%" height="100%"/>
       <use href="#row" y="200" width="100%" height="100%"/>
       <use href="#row" y="300" width="100%" height="100%"/>
+
+      <!-- 2 cross lines in center -->
+      <use href="#cross" width="100%" height="100%"/>
+
+      <!-- Multiple right angle lines -->
+      <use href="#rightAngleLineHalfRight" x="0" y="300" width="100%" height="100%"/>
+      <use href="#rightAngleLineHalfLeft" x="800" y="300" width="100%" height="100%"/>
+
+      <use href="#rightAngleLineFull" x="100" y="200" width="100%" height="100%"/>
+      <use href="#rightAngleLineFull" x="700" y="200" width="100%" height="100%"/>
+
+      <use href="#rightAngleLineFull" x="200" y="300" width="100%" height="100%"/>
+      <use href="#rightAngleLineFull" x="400" y="300" width="100%" height="100%"/>
+      <use href="#rightAngleLineFull" x="600" y="300" width="100%" height="100%"/>
     </g>
   </defs>
 
