@@ -6,6 +6,14 @@
 
 .board {
     box-sizing: content-box;
-    background: url("assets/board.svg");
-    border: 3px solid black;
+    background: url("assets/boards/board.svg");
+}
+
+.square {
+    float: left;
+    position: relative;
+}
+
+.clear {
+    clear: both;
 }
