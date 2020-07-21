@@ -24,7 +24,8 @@
     </g>
 
     <g id="rightAngleLineHalfLeft">
-      <use href="#rightAngleLineHalfRight" transform="scale(-1)" width="100%" height="100%"/>
+      <polygon points="-8,38 -12,38 -12,12 -38,12 -38,8 -8,8"/>
+      <polygon points="-8,-38 -12,-38 -12,-12 -38,-12 -38,-8 -8,-8"/>
     </g>
 
     <g id="rightAngleLineFull">
