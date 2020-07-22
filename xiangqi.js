@@ -35,15 +35,27 @@ function Position(side, row, column, type) {
 
 
 // Main library function
-function XiangQi(config) {
-  this.boardWidth = ('boardSize' in config) ? config['boardSize'] : 400;
-  this.containerElement = ('containerId' in config) ? document.getElementById(config['containerId']) : document.body;
-  this.boardContent = ('boardContent' in config) ? config['boardContent'] : [];
+function XiangQi(inputConfig) {
+  const config = this.buildConfig(inputConfig);
+  this.boardWidth = config['boardSize'];
+  this.containerElement = config['container'];
+  this.boardContent = config['boardContent'];
+  this.startPos = config['startPos'];
+  this.showSideBar = config['showSideBar'];
+  this.draggable = config['draggable'];
 
   this.squareSize = (this.boardWidth - 2) / NUM_COLS;
   this.boardHeight = (this.boardWidth / 9) * 10;
   this.board = [[], [], [], [], [], [], [], [], [], []];
 
+  // User given board content always overrides start position
+  if (this.startPos && this.boardContent.length === 0) {
+    this.boardContent = [...this.getStartPosition()]
+  } else {
+    this.startPos = false;
+  }
+
+  // Draw board and its content
   this.drawBoard();
   this.drawBoardContent();
 }
@@ -82,7 +94,7 @@ XiangQi.prototype = {
 
   drawPieces: function (row, col, piece, side, container) {
     const pieceElement = document.createElement('img');
-    pieceElement.src = `${PIECE_PATH}${SIDES[side]}${PIECES[piece]}.svg`;
+    pieceElement.src = `${PIECE_PATH}${side}${piece}.svg`;
     pieceElement.style.width = `${this.squareSize}px`;
     pieceElement.style.height = `${this.squareSize}px`;
 
@@ -98,20 +110,23 @@ XiangQi.prototype = {
     sideBar.style.width = `${this.squareSize * 2}px`;
     sideBar.style.height = `${this.boardHeight}px`;
 
-    // Object.entries(boardContent).forEach(([side, pieces]) => {
-    //   Object.entries(pieces).forEach(([piece, positions]) => {
-    //     positions.forEach((position) => {
-    //       this.drawPieces(position.row, position.column, piece, side);
-    //     });
-    //   });
-    // });
-
     this.containerElement.appendChild(sideBar);
   },
 
   // ======================================================================
   // Utility functions
   // ======================================================================
+  buildConfig: function (config) {
+    return {
+      boardSize: ('boardSize' in config) ? config['boardSize'] : 400,
+      container: ('containerId' in config) ? document.getElementById(config['containerId']) : document.body,
+      boardContent: ('boardContent' in config) ? config['boardContent'] : [],
+      startPos: ('startPos' in config) ? config['startPos'] : false,
+      showSideBar: ('showSideBar' in config) ? config['showSideBar'] : false,
+      draggable: ('draggable' in config) ? config['draggable'] : false
+    };
+  },
+
   getStartPosition: function () {
     return [
       Position(SIDES.red, 0, 4, PIECES.general),
