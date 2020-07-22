@@ -58,6 +58,11 @@ function XiangQi(inputConfig) {
   // Draw board and its content
   this.drawBoard();
   this.drawBoardContent();
+
+  // Draw side bar if enabled in config
+  if (this.showSideBar) {
+    this.drawSideBar()
+  }
 }
 
 XiangQi.prototype = {
@@ -105,7 +110,7 @@ XiangQi.prototype = {
     }
   },
 
-  drawPieceCount: function () {
+  drawSideBar: function () {
     const sideBar = createDiv([CSS.sideBar]);
     sideBar.style.width = `${this.squareSize * 2}px`;
     sideBar.style.height = `${this.boardHeight}px`;
