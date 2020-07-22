@@ -116,7 +116,8 @@ XiangQi.prototype = {
   // ======================================================================
   // Utility functions
   // ======================================================================
-  buildConfig: function (config) {
+  buildConfig: function (inputConfig) {
+    const config = (inputConfig === undefined) ? {} : inputConfig;
     return {
       boardSize: ('boardSize' in config) ? config['boardSize'] : 400,
       container: ('containerId' in config) ? document.getElementById(config['containerId']) : document.body,

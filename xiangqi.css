@@ -1,9 +1,3 @@
-/*.board-container {*/
-/*    box-sizing: content-box;*/
-/*    margin: 40px;*/
-/*    padding: 40px;*/
-/*}*/
-
 .board {
     box-sizing: content-box;
     background: url("assets/boards/board.svg");
