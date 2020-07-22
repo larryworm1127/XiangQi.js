@@ -7,6 +7,7 @@ const CSS = {
   square: 'square',
   clear: 'clear',
   row: 'row',
+  sideBar: 'side-bar'
 };
 const PIECE_PATH = 'assets/pieces/';
 
@@ -14,13 +15,13 @@ const PIECE_PATH = 'assets/pieces/';
 const NUM_ROWS = 10;
 const NUM_COLS = 9;
 const PIECES = {
-  general: 'General.svg',
-  advisor: 'Advisor.svg',
-  elephant: 'Elephant.svg',
-  cannon: 'Cannon.svg',
-  chariot: 'Chariot.svg',
-  horse: 'Horse.svg',
-  soldier: 'Soldier.svg'
+  general: 'General',
+  advisor: 'Advisor',
+  elephant: 'Elephant',
+  cannon: 'Cannon',
+  chariot: 'Chariot',
+  horse: 'Horse',
+  soldier: 'Soldier'
 };
 const SIDES = {
   red: 'r',
@@ -28,53 +29,32 @@ const SIDES = {
 };
 
 // Board content objects
-function Position(row, column) {
-  return { row: row, column: column };
-}
-
-function PiecesPos(
-  general,
-  advisor,
-  elephant,
-  cannon,
-  chariot,
-  horse,
-  soldier
-) {
-  return {
-    general: [...general],
-    advisor: [...advisor],
-    elephant: [...elephant],
-    cannon: [...chariot],
-    horse: [...horse],
-    soldier: [...soldier]
-  };
-}
-
-function Side(redPiecesPos, blackPiecesPos) {
-  return { red: redPiecesPos, black: blackPiecesPos };
+function Position(side, row, column, type) {
+  return { side: side, row: row, column: column, type: type };
 }
 
 
 // Main library function
-function XiangQi(containerId, boardSize, boardContent) {
-  this.boardWidth = (boardSize === undefined) ? 400 : boardSize;
+function XiangQi(config) {
+  this.boardWidth = ('boardSize' in config) ? config['boardSize'] : 400;
+  this.containerElement = ('containerId' in config) ? document.getElementById(config['containerId']) : document.body;
+  this.boardContent = ('boardContent' in config) ? config['boardContent'] : [];
+
   this.squareSize = (this.boardWidth - 2) / NUM_COLS;
   this.boardHeight = (this.boardWidth / 9) * 10;
-  this.containerElement = document.querySelector(`#${containerId}`);
   this.board = [[], [], [], [], [], [], [], [], [], []];
 
   this.drawBoard();
+  this.drawBoardContent();
 }
-
 
 XiangQi.prototype = {
   drawBoard: function () {
-    const boardContainer = createDiv([CSS.boardContainer]);
     const board = createDiv([CSS.board]);
     board.style.width = `${this.boardWidth}px`;
     board.style.height = `${this.boardHeight}px`;
 
+    // Add square div
     for (let row = 0; row < NUM_ROWS; row++) {
       const rowDiv = createDiv([CSS.row]);
 
@@ -89,61 +69,85 @@ XiangQi.prototype = {
       const clear = createDiv([CSS.clear]);
       rowDiv.appendChild(clear);
       board.appendChild(rowDiv);
-      boardContainer.appendChild(board);
     }
 
-    this.containerElement.appendChild(boardContainer);
+    this.containerElement.appendChild(board);
   },
 
-  drawBoardContent: function (boardContent) {
-    Object.entries(boardContent).forEach(([side, pieces]) => {
-      Object.entries(pieces).forEach(([piece, positions]) => {
-        positions.forEach((position) => {
-          this.drawPieces(position.row, position.column, piece, side);
-        });
-      });
+  drawBoardContent: function () {
+    this.boardContent.forEach((piece) => {
+      this.drawPieces(piece.row, piece.column, piece.type, piece.side);
     });
   },
 
-  drawPieces: function (row, col, piece, side) {
+  drawPieces: function (row, col, piece, side, container) {
     const pieceElement = document.createElement('img');
-    pieceElement.src = `${PIECE_PATH}${SIDES[side]}${PIECES[piece]}`;
+    pieceElement.src = `${PIECE_PATH}${SIDES[side]}${PIECES[piece]}.svg`;
     pieceElement.style.width = `${this.squareSize}px`;
     pieceElement.style.height = `${this.squareSize}px`;
-    this.board[row][col].appendChild(pieceElement);
+
+    if (container) {
+      container.appendChild(pieceElement);
+    } else {
+      this.board[row][col].appendChild(pieceElement);
+    }
   },
 
-  drawStartPosition: function () {
-    this.drawBoardContent(this.getStartPosition());
+  drawPieceCount: function () {
+    const sideBar = createDiv([CSS.sideBar]);
+    sideBar.style.width = `${this.squareSize * 2}px`;
+    sideBar.style.height = `${this.boardHeight}px`;
+
+    // Object.entries(boardContent).forEach(([side, pieces]) => {
+    //   Object.entries(pieces).forEach(([piece, positions]) => {
+    //     positions.forEach((position) => {
+    //       this.drawPieces(position.row, position.column, piece, side);
+    //     });
+    //   });
+    // });
+
+    this.containerElement.appendChild(sideBar);
   },
 
   // ======================================================================
   // Utility functions
   // ======================================================================
-  cleanUpConfig: function () {
-
-  },
-
   getStartPosition: function () {
-    const redPosition = PiecesPos(
-      [Position(0, 4)],
-      [Position(0, 3), Position(0, 5)],
-      [Position(0, 2), Position(0, 6)],
-      [Position(2, 1), Position(2, 7)],
-      [Position(0, 0), Position(0, 8)],
-      [Position(0, 1), Position(0, 7)],
-      [Position(3, 0), Position(3, 2), Position(3, 4), Position(3, 6), Position(3, 8)]
-    );
-    const blackPositions = PiecesPos(
-      [Position(9, 4)],
-      [Position(9, 3), Position(9, 5)],
-      [Position(9, 2), Position(9, 6)],
-      [Position(7, 1), Position(7, 7)],
-      [Position(9, 0), Position(9, 8)],
-      [Position(9, 1), Position(9, 7)],
-      [Position(6, 0), Position(6, 2), Position(6, 4), Position(6, 6), Position(6, 8)]
-    );
-    return Side(redPosition, blackPositions);
+    return [
+      Position(SIDES.red, 0, 4, PIECES.general),
+      Position(SIDES.red, 0, 3, PIECES.advisor),
+      Position(SIDES.red, 0, 5, PIECES.advisor),
+      Position(SIDES.red, 0, 2, PIECES.elephant),
+      Position(SIDES.red, 0, 6, PIECES.elephant),
+      Position(SIDES.red, 2, 1, PIECES.cannon),
+      Position(SIDES.red, 2, 7, PIECES.cannon),
+      Position(SIDES.red, 0, 0, PIECES.chariot),
+      Position(SIDES.red, 0, 8, PIECES.chariot),
+      Position(SIDES.red, 0, 1, PIECES.horse),
+      Position(SIDES.red, 0, 7, PIECES.horse),
+      Position(SIDES.red, 3, 0, PIECES.soldier),
+      Position(SIDES.red, 3, 2, PIECES.soldier),
+      Position(SIDES.red, 3, 4, PIECES.soldier),
+      Position(SIDES.red, 3, 6, PIECES.soldier),
+      Position(SIDES.red, 3, 8, PIECES.soldier),
+
+      Position(SIDES.black, 9, 4, PIECES.general),
+      Position(SIDES.black, 9, 3, PIECES.advisor),
+      Position(SIDES.black, 9, 5, PIECES.advisor),
+      Position(SIDES.black, 9, 2, PIECES.elephant),
+      Position(SIDES.black, 9, 6, PIECES.elephant),
+      Position(SIDES.black, 7, 1, PIECES.cannon),
+      Position(SIDES.black, 7, 7, PIECES.cannon),
+      Position(SIDES.black, 9, 0, PIECES.chariot),
+      Position(SIDES.black, 9, 8, PIECES.chariot),
+      Position(SIDES.black, 9, 1, PIECES.horse),
+      Position(SIDES.black, 9, 7, PIECES.horse),
+      Position(SIDES.black, 6, 0, PIECES.soldier),
+      Position(SIDES.black, 6, 2, PIECES.soldier),
+      Position(SIDES.black, 6, 4, PIECES.soldier),
+      Position(SIDES.black, 6, 6, PIECES.soldier),
+      Position(SIDES.black, 6, 8, PIECES.soldier),
+    ];
   },
 };
 

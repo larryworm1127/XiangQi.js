@@ -1,14 +1,16 @@
-.board-container {
-    box-sizing: content-box;
-    margin: 40px;
-    padding: 40px;
-}
+/*.board-container {*/
+/*    box-sizing: content-box;*/
+/*    margin: 40px;*/
+/*    padding: 40px;*/
+/*}*/
 
 .board {
     box-sizing: content-box;
     background: url("assets/boards/board.svg");
     padding: 5px;
     border: 3px solid black;
+    /*float: left;*/
+    display: inline-block;
 }
 
 .square {
@@ -18,4 +20,13 @@
 
 .clear {
     clear: both;
+}
+
+.side-bar {
+    position: relative;
+    margin-left: 10px;
+    padding: 5px;
+    display: inline-block;
+    box-sizing: content-box;
+    border: 2px solid black;
 }
