@@ -69,6 +69,22 @@ const lateGameBoard = function () {
   const board = new XiangQi({ containerId: 'lateGameBoard', boardContent: boardContent });
 };
 
+const interactiveBoard = function () {
+  const board = new XiangQi({ containerId: 'buttonControlBoard', delayDraw: true });
+  document.getElementById('drawBoard').onclick = () => {
+    board.drawBoard();
+    document.getElementById('drawBoard').setAttribute('disabled', 'true');
+  };
+
+  document.getElementById('drawStartPos').onclick = () => {
+    board.drawBoardContent(getStartPosition());
+  };
+
+  document.getElementById('clearBoard').onclick = () => {
+    board.clearBoard();
+  };
+};
+
 const largerBoard = function () {
   const board = new XiangQi({ containerId: 'largeBoard', boardSize: 800, startPos: true });
 };
@@ -89,4 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Create larger size board
   largerBoard();
+
+  // Create board controlled by buttons
+  interactiveBoard();
 });
