@@ -28,7 +28,7 @@ const SIDES = {
   black: 'b'
 };
 
-// Board content objects
+// Objects functions
 function Position(side, row, column, type) {
   return { side: side, row: row, column: column, type: type };
 }
@@ -43,6 +43,7 @@ function XiangQi(inputConfig) {
   this.startPos = config['startPos'];
   this.showSideBar = config['showSideBar'];
   this.draggable = config['draggable'];
+  this.delayDraw = config['delayDraw'];
 
   this.squareSize = (this.boardWidth - 2) / NUM_COLS;
   this.boardHeight = (this.boardWidth / 9) * 10;
@@ -50,18 +51,20 @@ function XiangQi(inputConfig) {
 
   // User given board content always overrides start position
   if (this.startPos && this.boardContent.length === 0) {
-    this.boardContent = [...this.getStartPosition()]
+    this.boardContent = [...this.getStartPosition()];
   } else {
     this.startPos = false;
   }
 
-  // Draw board and its content
-  this.drawBoard();
-  this.drawBoardContent();
+  // Draw board and its content if delayDraw is disabled in config
+  if (!this.delayDraw) {
+    this.drawBoard();
+    this.drawBoardContent(this.boardContent);
+  }
 
   // Draw side bar if enabled in config
   if (this.showSideBar) {
-    this.drawSideBar()
+    this.drawSideBar();
   }
 }
 
@@ -91,8 +94,8 @@ XiangQi.prototype = {
     this.containerElement.appendChild(board);
   },
 
-  drawBoardContent: function () {
-    this.boardContent.forEach((piece) => {
+  drawBoardContent: function (boardContent) {
+    boardContent.forEach((piece) => {
       this.drawPieces(piece.row, piece.column, piece.type, piece.side);
     });
   },
@@ -129,7 +132,8 @@ XiangQi.prototype = {
       boardContent: ('boardContent' in config) ? config['boardContent'] : [],
       startPos: ('startPos' in config) ? config['startPos'] : false,
       showSideBar: ('showSideBar' in config) ? config['showSideBar'] : false,
-      draggable: ('draggable' in config) ? config['draggable'] : false
+      draggable: ('draggable' in config) ? config['draggable'] : false,
+      delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
     };
   },
 
