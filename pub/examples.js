@@ -107,7 +107,7 @@ const pieceMoveBoard = function () {
       Move(Position(0, 0), Position(1, 0)),
       Move(Position(9, 0), Position(9, 1)),
       Move(Position(1, 0), Position(1, 5)),
-      Move(Position(9, 1), Position(6, 1))
+      Move(Position(9, 1), Position(5, 1))
     ];
     let index = 0;
     while (index < moves.length) {
