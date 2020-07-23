@@ -29,8 +29,12 @@ const SIDES = {
 };
 
 // Objects functions
-function Position(side, row, column, type) {
+function Position(row, column, type, side) {
   return { side: side, row: row, column: column, type: type };
+}
+
+function Move(oldPos, newPos) {
+  return { oldPos: oldPos, newPos: newPos };
 }
 
 
@@ -39,7 +43,7 @@ function XiangQi(inputConfig) {
   const config = this.buildConfig(inputConfig);
   this.boardWidth = config['boardSize'];
   this.containerElement = config['container'];
-  this.boardContent = config['boardContent'];
+  this.initialBoardContent = [...config['boardContent']];
   this.startPos = config['startPos'];
   this.showSideBar = config['showSideBar'];
   this.draggable = config['draggable'];
@@ -51,8 +55,8 @@ function XiangQi(inputConfig) {
   this.board = [[], [], [], [], [], [], [], [], [], []];
 
   // User given board content always overrides start position
-  if (this.startPos && this.boardContent.length === 0) {
-    this.boardContent = [...getStartPosition(this.redOnBottom)];
+  if (this.startPos && this.initialBoardContent.length === 0) {
+    this.initialBoardContent = [...getStartPosition(this.redOnBottom)];
   } else {
     this.startPos = false;
     this.redOnBottom = false;
@@ -61,7 +65,7 @@ function XiangQi(inputConfig) {
   // Draw board and its content if delayDraw is disabled in config
   if (!this.delayDraw) {
     this.drawBoard();
-    this.drawBoardContent(this.boardContent);
+    this.drawBoardContent(this.initialBoardContent);
   }
 
   // Draw side bar if enabled in config
@@ -141,6 +145,16 @@ XiangQi.prototype = {
     });
   },
 
+  movePiece: function (move) {
+    const newSquare = this.board[move.newPos.row][move.newPos.column];
+    if (!newSquare.hasChildNodes()) {
+      const oldSquare = this.board[move.oldPos.row][move.oldPos.column];
+      const pieceElement = oldSquare.firstChild;
+      oldSquare.removeChild(pieceElement);
+      newSquare.appendChild(pieceElement);
+    }
+  },
+
   // ======================================================================
   // Utility functions
   // ======================================================================
@@ -160,41 +174,41 @@ XiangQi.prototype = {
 };
 
 const getStartPosition = function (redOnBottom) {
-  const topSide = (redOnBottom) ? SIDES.black : SIDES.red
-  const bottomSide = (topSide === SIDES.red) ? SIDES.black : SIDES.red
+  const topSide = (redOnBottom) ? SIDES.black : SIDES.red;
+  const bottomSide = (topSide === SIDES.red) ? SIDES.black : SIDES.red;
   return [
-    Position(topSide, 0, 4, PIECES.general),
-    Position(topSide, 0, 3, PIECES.advisor),
-    Position(topSide, 0, 5, PIECES.advisor),
-    Position(topSide, 0, 2, PIECES.elephant),
-    Position(topSide, 0, 6, PIECES.elephant),
-    Position(topSide, 2, 1, PIECES.cannon),
-    Position(topSide, 2, 7, PIECES.cannon),
-    Position(topSide, 0, 0, PIECES.chariot),
-    Position(topSide, 0, 8, PIECES.chariot),
-    Position(topSide, 0, 1, PIECES.horse),
-    Position(topSide, 0, 7, PIECES.horse),
-    Position(topSide, 3, 0, PIECES.soldier),
-    Position(topSide, 3, 2, PIECES.soldier),
-    Position(topSide, 3, 4, PIECES.soldier),
-    Position(topSide, 3, 6, PIECES.soldier),
-    Position(topSide, 3, 8, PIECES.soldier),
+    Position(0, 4, PIECES.general, topSide),
+    Position(0, 3, PIECES.advisor, topSide),
+    Position(0, 5, PIECES.advisor, topSide),
+    Position(0, 2, PIECES.elephant, topSide),
+    Position(0, 6, PIECES.elephant, topSide),
+    Position(2, 1, PIECES.cannon, topSide),
+    Position(2, 7, PIECES.cannon, topSide),
+    Position(0, 0, PIECES.chariot, topSide),
+    Position(0, 8, PIECES.chariot, topSide),
+    Position(0, 1, PIECES.horse, topSide),
+    Position(0, 7, PIECES.horse, topSide),
+    Position(3, 0, PIECES.soldier, topSide),
+    Position(3, 2, PIECES.soldier, topSide),
+    Position(3, 4, PIECES.soldier, topSide),
+    Position(3, 6, PIECES.soldier, topSide),
+    Position(3, 8, PIECES.soldier, topSide),
 
-    Position(bottomSide, 9, 4, PIECES.general),
-    Position(bottomSide, 9, 3, PIECES.advisor),
-    Position(bottomSide, 9, 5, PIECES.advisor),
-    Position(bottomSide, 9, 2, PIECES.elephant),
-    Position(bottomSide, 9, 6, PIECES.elephant),
-    Position(bottomSide, 7, 1, PIECES.cannon),
-    Position(bottomSide, 7, 7, PIECES.cannon),
-    Position(bottomSide, 9, 0, PIECES.chariot),
-    Position(bottomSide, 9, 8, PIECES.chariot),
-    Position(bottomSide, 9, 1, PIECES.horse),
-    Position(bottomSide, 9, 7, PIECES.horse),
-    Position(bottomSide, 6, 0, PIECES.soldier),
-    Position(bottomSide, 6, 2, PIECES.soldier),
-    Position(bottomSide, 6, 4, PIECES.soldier),
-    Position(bottomSide, 6, 6, PIECES.soldier),
-    Position(bottomSide, 6, 8, PIECES.soldier),
+    Position(9, 4, PIECES.general, bottomSide),
+    Position(9, 3, PIECES.advisor, bottomSide),
+    Position(9, 5, PIECES.advisor, bottomSide),
+    Position(9, 2, PIECES.elephant, bottomSide),
+    Position(9, 6, PIECES.elephant, bottomSide),
+    Position(7, 1, PIECES.cannon, bottomSide),
+    Position(7, 7, PIECES.cannon, bottomSide),
+    Position(9, 0, PIECES.chariot, bottomSide),
+    Position(9, 8, PIECES.chariot, bottomSide),
+    Position(9, 1, PIECES.horse, bottomSide),
+    Position(9, 7, PIECES.horse, bottomSide),
+    Position(6, 0, PIECES.soldier, bottomSide),
+    Position(6, 2, PIECES.soldier, bottomSide),
+    Position(6, 4, PIECES.soldier, bottomSide),
+    Position(6, 6, PIECES.soldier, bottomSide),
+    Position(6, 8, PIECES.soldier, bottomSide),
   ];
 };

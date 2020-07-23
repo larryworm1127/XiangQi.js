@@ -13,34 +13,34 @@ const fullBoardStart = function () {
 const midGameBoard = function () {
   // One of the ways to create JS object mapping for board content
   const midGameBoardContent = [
-    Position(SIDES.red, 0, 0, PIECES.chariot),
-    Position(SIDES.red, 0, 8, PIECES.chariot),
-    Position(SIDES.red, 0, 2, PIECES.elephant),
-    Position(SIDES.red, 2, 4, PIECES.elephant),
-    Position(SIDES.red, 0, 5, PIECES.advisor),
-    Position(SIDES.red, 1, 4, PIECES.advisor),
-    Position(SIDES.red, 2, 6, PIECES.horse),
-    Position(SIDES.red, 4, 7, PIECES.cannon),
-    Position(SIDES.red, 4, 0, PIECES.soldier),
-    Position(SIDES.red, 4, 2, PIECES.soldier),
-    Position(SIDES.red, 3, 4, PIECES.soldier),
-    Position(SIDES.red, 4, 6, PIECES.soldier),
-    Position(SIDES.red, 3, 8, PIECES.soldier),
-    Position(SIDES.red, 0, 4, PIECES.general),
+    Position(0, 0, PIECES.chariot, SIDES.red),
+    Position(0, 8, PIECES.chariot, SIDES.red),
+    Position(0, 2, PIECES.elephant, SIDES.red),
+    Position(2, 4, PIECES.elephant, SIDES.red),
+    Position(0, 5, PIECES.advisor, SIDES.red),
+    Position(1, 4, PIECES.advisor, SIDES.red),
+    Position(2, 6, PIECES.horse, SIDES.red),
+    Position(4, 7, PIECES.cannon, SIDES.red),
+    Position(4, 0, PIECES.soldier, SIDES.red),
+    Position(4, 2, PIECES.soldier, SIDES.red),
+    Position(3, 4, PIECES.soldier, SIDES.red),
+    Position(4, 6, PIECES.soldier, SIDES.red),
+    Position(3, 8, PIECES.soldier, SIDES.red),
+    Position(0, 4, PIECES.general, SIDES.red),
 
-    Position(SIDES.black, 9, 1, PIECES.chariot),
-    Position(SIDES.black, 3, 3, PIECES.chariot),
-    Position(SIDES.black, 9, 2, PIECES.elephant),
-    Position(SIDES.black, 9, 6, PIECES.elephant),
-    Position(SIDES.black, 9, 5, PIECES.advisor),
-    Position(SIDES.black, 8, 4, PIECES.advisor),
-    Position(SIDES.black, 7, 0, PIECES.horse),
-    Position(SIDES.black, 7, 4, PIECES.cannon),
-    Position(SIDES.black, 6, 0, PIECES.soldier),
-    Position(SIDES.black, 5, 4, PIECES.soldier),
-    Position(SIDES.black, 6, 6, PIECES.soldier),
-    Position(SIDES.black, 6, 8, PIECES.soldier),
-    Position(SIDES.black, 9, 4, PIECES.general),
+    Position(9, 1, PIECES.chariot, SIDES.black),
+    Position(3, 3, PIECES.chariot, SIDES.black),
+    Position(9, 2, PIECES.elephant, SIDES.black),
+    Position(9, 6, PIECES.elephant, SIDES.black),
+    Position(9, 5, PIECES.advisor, SIDES.black),
+    Position(8, 4, PIECES.advisor, SIDES.black),
+    Position(7, 0, PIECES.horse, SIDES.black),
+    Position(7, 4, PIECES.cannon, SIDES.black),
+    Position(6, 0, PIECES.soldier, SIDES.black),
+    Position(5, 4, PIECES.soldier, SIDES.black),
+    Position(6, 6, PIECES.soldier, SIDES.black),
+    Position(6, 8, PIECES.soldier, SIDES.black),
+    Position(9, 4, PIECES.general, SIDES.black),
   ];
   const board = new XiangQi({ containerId: 'midGameBoard', boardContent: midGameBoardContent });
 };
@@ -85,6 +85,38 @@ const interactiveBoard = function () {
   };
 };
 
+const pieceMoveBoard = function () {
+  const board = new XiangQi({ containerId: 'movePieceBoard', startPos: true });
+  const generator = getMove();
+
+  document.getElementById('move').onclick = function () {
+    const nextMove = generator.next();
+    if (!nextMove.done) {
+      board.movePiece(nextMove.value);
+    } else {
+      document.getElementById('move').setAttribute('disabled', 'true');
+    }
+  };
+
+  function* getMove() {
+    const moves = [
+      Move(Position(2, 1), Position(2, 4)),
+      Move(Position(7, 1), Position(7, 4)),
+      Move(Position(0, 1), Position(2, 2)),
+      Move(Position(9, 1), Position(7, 2)),
+      Move(Position(0, 0), Position(1, 0)),
+      Move(Position(9, 0), Position(9, 1)),
+      Move(Position(1, 0), Position(1, 5)),
+      Move(Position(9, 1), Position(6, 1))
+    ];
+    let index = 0;
+    while (index < moves.length) {
+      yield moves[index];
+      index++;
+    }
+  }
+};
+
 const largerBoard = function () {
   const board = new XiangQi({ containerId: 'largeBoard', boardSize: 800, startPos: true });
 };
@@ -108,4 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Create board controlled by buttons
   interactiveBoard();
+
+  // Create board with piece movements
+  pieceMoveBoard();
 });
