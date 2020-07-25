@@ -74,14 +74,17 @@ const interactiveBoard = function () {
   document.getElementById('drawBoard').onclick = () => {
     board.drawBoard();
     document.getElementById('drawBoard').setAttribute('disabled', 'true');
+    document.getElementById('drawStartPos').removeAttribute('disabled');
   };
 
   document.getElementById('drawStartPos').onclick = () => {
-    board.drawBoardContent(getStartPosition());
+    board.drawStartPositions();
+    document.getElementById('drawStartPos').setAttribute('disabled', 'true');
   };
 
   document.getElementById('clearBoard').onclick = () => {
     board.clearBoard();
+    document.getElementById('drawStartPos').removeAttribute('disabled');
   };
 };
 
@@ -130,10 +133,10 @@ document.addEventListener('DOMContentLoaded', function () {
   fullBoardStart();
 
   // Create mid game board
-  midGameBoard();
+  // midGameBoard();
 
   // Create late game board
-  lateGameBoard();
+  // lateGameBoard();
 
   // Create larger size board
   largerBoard();

@@ -14,6 +14,8 @@ const PIECE_PATH = 'assets/pieces/';
 // XiangQi related constants
 const NUM_ROWS = 10;
 const NUM_COLS = 9;
+
+// Enums
 const PIECES = {
   general: 'General',
   advisor: 'Advisor',
@@ -21,14 +23,73 @@ const PIECES = {
   cannon: 'Cannon',
   chariot: 'Chariot',
   horse: 'Horse',
-  soldier: 'Soldier'
+  soldier: 'Soldier',
+  empty: 'Empty'
 };
 const SIDES = {
   red: 'r',
   black: 'b'
 };
 
+// ======================================================================
+// A virtual XiangQi board
+// Used to keep track of XiangQi pieces on the board.
+// ======================================================================
+class Board {
+
+  constructor(config) {
+    if (config.boardContent.length > 0) {
+      this.board = config.boardContent.map((row) => {
+        return row.slice();
+      });
+    } else if (config.startPos) {
+      this.setStartPosition(config.redOnBottom);
+    } else {
+      this.board = new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(Piece(PIECES.empty)));
+    }
+  }
+
+  /**
+   * Precondition: the move is valid
+   *
+   * @param move A move object that instructs function of what to move.
+   */
+  move = (move) => {
+    const square = this.board[move.oldPos.row][move.oldPos.column];
+    if (square.type === PIECES.empty) {
+      return false;
+    }
+
+    this.board[move.oldPos.row][move.oldPos.column] = Piece(PIECES.empty);
+    this.board[move.newPos.row][move.newPos.column] = square;
+    return true;
+  };
+
+  getBoardContent = () => {
+    return JSON.parse(JSON.stringify(this.board));
+  };
+
+  clearBoard = () => {
+    this.board = this.board.map(() => {
+      return new Array(NUM_COLS).fill(Piece(PIECES.empty));
+    });
+  };
+
+  setStartPosition = (redOnBottom) => {
+    this.board = getStartBoard(redOnBottom).map((row) => {
+      return row.slice();
+    });
+  };
+}
+
+
+// ======================================================================
 // Objects functions
+// ======================================================================
+function Piece(type, side) {
+  return { type: type, side: side };
+}
+
 function Position(row, column, type, side) {
   return { side: side, row: row, column: column, type: type };
 }
@@ -38,47 +99,80 @@ function Move(oldPos, newPos) {
 }
 
 
+// ======================================================================
 // Main library function
+// ======================================================================
 function XiangQi(inputConfig) {
-  const config = this.buildConfig(inputConfig);
-  this.boardWidth = config['boardSize'];
-  this.containerElement = config['container'];
-  this.initialBoardContent = [...config['boardContent']];
-  this.startPos = config['startPos'];
-  this.showSideBar = config['showSideBar'];
-  this.draggable = config['draggable'];
-  this.delayDraw = config['delayDraw'];
-  this.redOnBottom = config['redOnBottom'];
+  this.config = this._buildConfig(inputConfig);
+  this.boardWidth = this.config.boardSize;
+  this.containerElement = this.config.container;
+  this.draggable = this.config.draggable;
 
   this.squareSize = (this.boardWidth - 2) / NUM_COLS;
-  this.boardHeight = (this.boardWidth / 9) * 10;
-  this.board = [[], [], [], [], [], [], [], [], [], []];
-
-  // User given board content always overrides start position
-  if (this.startPos && this.initialBoardContent.length === 0) {
-    this.initialBoardContent = [...getStartPosition(this.redOnBottom)];
-  } else {
-    this.startPos = false;
-    this.redOnBottom = false;
-  }
+  this.boardHeight = (this.boardWidth / NUM_COLS) * NUM_ROWS;
+  this.boardSquares = [[], [], [], [], [], [], [], [], [], []];
+  this.board = new Board(this.config);
 
   // Draw board and its content if delayDraw is disabled in config
-  if (!this.delayDraw) {
+  if (!this.config.delayDraw) {
     this.drawBoard();
-    this.drawBoardContent(this.initialBoardContent);
+    this.drawBoardContent();
   }
 
   // Draw side bar if enabled in config
-  if (this.showSideBar) {
-    this.drawSideBar();
+  if (this.config.showSideBar) {
+    this._drawSideBar();
   }
 }
 
 XiangQi.prototype = {
   // ======================================================================
-  // DOM manipulation functions
+  // Main features functions
   // ======================================================================
   drawBoard: function () {
+    this._drawBoardDOM();
+  },
+
+  movePiece: function (move) {
+    if (this.board.move(move)) {
+      this.clearBoard(false);
+      this.drawBoardContent();
+    }
+  },
+
+  drawStartPositions: function () {
+    this.board.setStartPosition(this.config.redOnBottom);
+    this.drawBoardContent();
+  },
+
+  drawBoardContent: function () {
+    const content = this.board.getBoardContent();
+    content.forEach((row, rowIndex) => {
+      row.forEach((square, colIndex) => {
+        if (square.type !== PIECES.empty) {
+          this._drawPiece(rowIndex, colIndex, square.type, square.side);
+        }
+      });
+    });
+  },
+
+  clearBoard: function (clearVirtual = true) {
+    this.boardSquares.forEach((row) => {
+      row.forEach((square) => {
+        this._removePiece(square);
+      });
+    });
+
+    // Clear virtual board content
+    if (clearVirtual) {
+      this.board.clearBoard();
+    }
+  },
+
+  // ======================================================================
+  // DOM manipulation functions
+  // ======================================================================
+  _drawBoardDOM: function () {
     const board = document.createElement('div');
     board.className = CSS.board;
     board.style.width = `${this.boardWidth}px`;
@@ -95,7 +189,7 @@ XiangQi.prototype = {
         square.style.width = `${this.squareSize}px`;
         square.style.height = `${this.squareSize}px`;
         rowDiv.appendChild(square);
-        this.board[row].push(square);
+        this.boardSquares[row].push(square);
       }
 
       const clear = document.createElement('div');
@@ -107,26 +201,16 @@ XiangQi.prototype = {
     this.containerElement.appendChild(board);
   },
 
-  drawBoardContent: function (boardContent) {
-    boardContent.forEach((piece) => {
-      this.drawPieces(piece.row, piece.column, piece.type, piece.side);
-    });
-  },
-
-  drawPieces: function (row, col, piece, side, container) {
+  _drawPiece: function (row, col, piece, side) {
     const pieceElement = document.createElement('img');
     pieceElement.src = `${PIECE_PATH}${side}${piece}.svg`;
     pieceElement.style.width = `${this.squareSize}px`;
     pieceElement.style.height = `${this.squareSize}px`;
 
-    if (container) {
-      container.appendChild(pieceElement);
-    } else {
-      this.board[row][col].appendChild(pieceElement);
-    }
+    this.boardSquares[row][col].appendChild(pieceElement);
   },
 
-  drawSideBar: function () {
+  _drawSideBar: function () {
     const sideBar = document.createElement('div');
     sideBar.className = CSS.sideBar;
     sideBar.style.width = `${this.squareSize * 2}px`;
@@ -135,30 +219,16 @@ XiangQi.prototype = {
     this.containerElement.appendChild(sideBar);
   },
 
-  clearBoard: function () {
-    this.board.forEach((row) => {
-      row.forEach((square) => {
-        while (square.firstChild) {
-          square.removeChild(square.lastChild);
-        }
-      });
-    });
-  },
-
-  movePiece: function (move) {
-    const newSquare = this.board[move.newPos.row][move.newPos.column];
-    if (!newSquare.hasChildNodes()) {
-      const oldSquare = this.board[move.oldPos.row][move.oldPos.column];
-      const pieceElement = oldSquare.firstChild;
-      oldSquare.removeChild(pieceElement);
-      newSquare.appendChild(pieceElement);
+  _removePiece: function (square) {
+    while (square.firstChild) {
+      square.removeChild(square.lastChild);
     }
   },
 
   // ======================================================================
   // Utility functions
   // ======================================================================
-  buildConfig: function (inputConfig) {
+  _buildConfig: function (inputConfig) {
     const config = (inputConfig === undefined) ? {} : inputConfig;
     return {
       boardSize: ('boardSize' in config) ? config['boardSize'] : 400,
@@ -171,44 +241,66 @@ XiangQi.prototype = {
       redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
     };
   },
+
+  _getPieceCounts: function () {
+    // TODO: finish this
+    const result = {
+      red: {},
+      black: {}
+    };
+    Object.keys(PIECES).forEach((piece) => {
+      result.red[piece] = 0;
+      result.black[piece] = 0;
+    });
+    this.boardSquares.forEach((row) => {
+      row.forEach((square) => {
+
+      });
+    });
+  }
 };
 
-const getStartPosition = function (redOnBottom) {
+const getStartBoard = function (redOnBottom) {
   const topSide = (redOnBottom) ? SIDES.black : SIDES.red;
   const bottomSide = (topSide === SIDES.red) ? SIDES.black : SIDES.red;
   return [
-    Position(0, 4, PIECES.general, topSide),
-    Position(0, 3, PIECES.advisor, topSide),
-    Position(0, 5, PIECES.advisor, topSide),
-    Position(0, 2, PIECES.elephant, topSide),
-    Position(0, 6, PIECES.elephant, topSide),
-    Position(2, 1, PIECES.cannon, topSide),
-    Position(2, 7, PIECES.cannon, topSide),
-    Position(0, 0, PIECES.chariot, topSide),
-    Position(0, 8, PIECES.chariot, topSide),
-    Position(0, 1, PIECES.horse, topSide),
-    Position(0, 7, PIECES.horse, topSide),
-    Position(3, 0, PIECES.soldier, topSide),
-    Position(3, 2, PIECES.soldier, topSide),
-    Position(3, 4, PIECES.soldier, topSide),
-    Position(3, 6, PIECES.soldier, topSide),
-    Position(3, 8, PIECES.soldier, topSide),
-
-    Position(9, 4, PIECES.general, bottomSide),
-    Position(9, 3, PIECES.advisor, bottomSide),
-    Position(9, 5, PIECES.advisor, bottomSide),
-    Position(9, 2, PIECES.elephant, bottomSide),
-    Position(9, 6, PIECES.elephant, bottomSide),
-    Position(7, 1, PIECES.cannon, bottomSide),
-    Position(7, 7, PIECES.cannon, bottomSide),
-    Position(9, 0, PIECES.chariot, bottomSide),
-    Position(9, 8, PIECES.chariot, bottomSide),
-    Position(9, 1, PIECES.horse, bottomSide),
-    Position(9, 7, PIECES.horse, bottomSide),
-    Position(6, 0, PIECES.soldier, bottomSide),
-    Position(6, 2, PIECES.soldier, bottomSide),
-    Position(6, 4, PIECES.soldier, bottomSide),
-    Position(6, 6, PIECES.soldier, bottomSide),
-    Position(6, 8, PIECES.soldier, bottomSide),
+    [
+      Piece(PIECES.chariot, topSide),
+      Piece(PIECES.horse, topSide),
+      Piece(PIECES.elephant, topSide),
+      Piece(PIECES.advisor, topSide),
+      Piece(PIECES.general, topSide),
+      Piece(PIECES.advisor, topSide),
+      Piece(PIECES.elephant, topSide),
+      Piece(PIECES.horse, topSide),
+      Piece(PIECES.chariot, topSide),
+    ],
+    new Array(NUM_COLS).fill(Piece(PIECES.empty)),
+    new Array(NUM_COLS).fill(Piece(PIECES.empty)).map((item, index) => {
+      return (index === 1 || index === 7) ? Piece(PIECES.cannon, topSide) : item;
+    }),
+    new Array(NUM_COLS).fill(Piece(PIECES.empty)).map((item, index) => {
+      return (index % 2 === 0) ? Piece(PIECES.soldier, topSide) : item;
+    }),
+    new Array(NUM_COLS).fill(Piece(PIECES.empty)),
+    new Array(NUM_COLS).fill(Piece(PIECES.empty)),
+    new Array(NUM_COLS).fill(Piece(PIECES.empty)).map((item, index) => {
+      return (index % 2 === 0) ? Piece(PIECES.soldier, bottomSide) : item;
+    }),
+    new Array(NUM_COLS).fill(Piece(PIECES.empty)).map((item, index) => {
+      return (index === 1 || index === 7) ? Piece(PIECES.cannon, bottomSide) : item;
+    }),
+    new Array(NUM_COLS).fill(Piece(PIECES.empty)),
+    [
+      Piece(PIECES.chariot, bottomSide),
+      Piece(PIECES.horse, bottomSide),
+      Piece(PIECES.elephant, bottomSide),
+      Piece(PIECES.advisor, bottomSide),
+      Piece(PIECES.general, bottomSide),
+      Piece(PIECES.advisor, bottomSide),
+      Piece(PIECES.elephant, bottomSide),
+      Piece(PIECES.horse, bottomSide),
+      Piece(PIECES.chariot, bottomSide),
+    ],
   ];
 };
