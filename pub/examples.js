@@ -29,7 +29,6 @@ const fullBoardStart = function () {
 };
 
 const midGameBoard = function () {
-  // One of the ways to create JS object mapping for board content
   const midGameBoardContent = [
     [
       Piece(PIECES.empty), Piece(PIECES.chariot, SIDES.black),
@@ -71,20 +70,24 @@ const midGameBoard = function () {
 
 const interactiveBoard = function () {
   const board = new XiangQi({ containerId: 'buttonControlBoard', delayDraw: true });
-  document.getElementById('drawBoard').onclick = () => {
+  const drawBoardButton = document.getElementById('drawBoard');
+  const drawStartPosButton = document.getElementById('drawStartPos');
+  const clearBoardButton = document.getElementById('clearBoard');
+
+  drawBoardButton.onclick = () => {
     board.drawBoard();
-    document.getElementById('drawBoard').setAttribute('disabled', 'true');
-    document.getElementById('drawStartPos').removeAttribute('disabled');
+    drawBoardButton.setAttribute('disabled', 'true');
+    drawStartPosButton.removeAttribute('disabled');
   };
 
-  document.getElementById('drawStartPos').onclick = () => {
+  drawStartPosButton.onclick = () => {
     board.drawStartPositions();
-    document.getElementById('drawStartPos').setAttribute('disabled', 'true');
+    drawStartPosButton.setAttribute('disabled', 'true');
   };
 
-  document.getElementById('clearBoard').onclick = () => {
+  clearBoardButton.onclick = () => {
     board.clearBoard();
-    document.getElementById('drawStartPos').removeAttribute('disabled');
+    drawStartPosButton.removeAttribute('disabled');
   };
 };
 
@@ -120,6 +123,32 @@ const pieceMoveBoard = function () {
   }
 };
 
+const addRemovePieceBoard = function () {
+  const board = new XiangQi({ containerId: 'addRemoveControlBoard', startPos: true });
+
+  const pieceType = document.getElementById('type');
+  const side = document.getElementById('side');
+  const addRow = document.getElementById('addRow');
+  const addCol = document.getElementById('addCol');
+  const addButton = document.getElementById('addPiece');
+
+  const removeRow = document.getElementById('removeRow');
+  const removeCol = document.getElementById('removeCol');
+  const removeButton = document.getElementById('removePiece');
+
+  addButton.onclick = (e) => {
+    e.preventDefault();
+
+    board.drawPiece(addRow.value, addCol.value, pieceType.value, side.value);
+  };
+
+  removeButton.onclick = (e) => {
+    e.preventDefault();
+
+    board.removePiece(removeRow.value, removeCol.value);
+  };
+};
+
 const largerBoard = function () {
   const board = new XiangQi({ containerId: 'largeBoard', boardSize: 800, startPos: true });
 };
@@ -140,6 +169,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Create board controlled by buttons
   interactiveBoard();
+
+  // Create board that adds and remove pieces
+  addRemovePieceBoard();
 
   // Create board with piece movements
   pieceMoveBoard();

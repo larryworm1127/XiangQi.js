@@ -150,16 +150,16 @@ XiangQi.prototype = {
     content.forEach((row, rowIndex) => {
       row.forEach((square, colIndex) => {
         if (square.type !== PIECES.empty) {
-          this._drawPiece(rowIndex, colIndex, square.type, square.side);
+          this._drawPieceDOM(rowIndex, colIndex, square.type, square.side);
         }
       });
     });
   },
 
   clearBoard: function (clearVirtual = true) {
-    this.boardSquares.forEach((row) => {
-      row.forEach((square) => {
-        this._removePiece(square);
+    this.boardSquares.forEach((row, rowIndex) => {
+      row.forEach((_, colIndex) => {
+        this._removePieceDOM(rowIndex, colIndex);
       });
     });
 
@@ -167,6 +167,14 @@ XiangQi.prototype = {
     if (clearVirtual) {
       this.board.clearBoard();
     }
+  },
+
+  drawPiece: function (row, col, piece, side) {
+    this._drawPieceDOM(row, col, piece, side);
+  },
+
+  removePiece: function (row, col) {
+    this._removePieceDOM(row, col);
   },
 
   // ======================================================================
@@ -201,13 +209,15 @@ XiangQi.prototype = {
     this.containerElement.appendChild(board);
   },
 
-  _drawPiece: function (row, col, piece, side) {
-    const pieceElement = document.createElement('img');
-    pieceElement.src = `${PIECE_PATH}${side}${piece}.svg`;
-    pieceElement.style.width = `${this.squareSize}px`;
-    pieceElement.style.height = `${this.squareSize}px`;
+  _drawPieceDOM: function (row, col, piece, side) {
+    if (!this.boardSquares[row][col].firstChild) {
+      const pieceElement = document.createElement('img');
+      pieceElement.src = `${PIECE_PATH}${side}${piece}.svg`;
+      pieceElement.style.width = `${this.squareSize}px`;
+      pieceElement.style.height = `${this.squareSize}px`;
 
-    this.boardSquares[row][col].appendChild(pieceElement);
+      this.boardSquares[row][col].appendChild(pieceElement);
+    }
   },
 
   _drawSideBar: function () {
@@ -219,7 +229,8 @@ XiangQi.prototype = {
     this.containerElement.appendChild(sideBar);
   },
 
-  _removePiece: function (square) {
+  _removePieceDOM: function (row, col) {
+    const square = this.boardSquares[row][col];
     while (square.firstChild) {
       square.removeChild(square.lastChild);
     }

@@ -41,10 +41,39 @@
     <br/>
   </div>
 
+  <div id="addRemoveControlBoard" class="boardContainer">
+    <div>
+      <p>
+        Developer can add single piece at a time, as well as remove specific piece from board.
+        <br/>
+        Note: below input fields expects valid inputs, otherwise error will be thrown.
+      </p>
+
+      <form>
+        <input type="text" id="type" placeholder="Piece Type (i.e. Chariot, Horse)">
+        <input type="text" id="side" placeholder="Side (i.e. r, b)">
+        <br/>
+        <input type="number" id="addRow" placeholder="Row (0 to 9)">
+        <input type="number" id="addCol" placeholder="Column (0 to 8)">
+        <br/>
+        <button id="addPiece">Add Piece</button>
+      </form>
+      <br/>
+
+      <form>
+        <input type="number" id="removeRow" placeholder="Row (0 to 9)">
+        <input type="number" id="removeCol" placeholder="Column (0 to 8)">
+        <br/>
+        <button id="removePiece">Remove Piece</button>
+      </form>
+    </div>
+    <br/>
+  </div>
+
   <div id="buttonControlBoard" class="boardContainer">
     <div>
       <p>
-        User can choose to delay drawing of the board
+        Developer can choose to delay drawing of the board
       </p>
       <button type="button" id="drawBoard">Draw Empty Board</button>
       <button type="button" id="drawStartPos" disabled>Draw Start Position</button>
