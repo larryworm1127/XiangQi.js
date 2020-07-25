@@ -90,8 +90,8 @@ function Piece(type, side) {
   return { type: type, side: side };
 }
 
-function Position(row, column, type, side) {
-  return { side: side, row: row, column: column, type: type };
+function Position(row, column) {
+  return { row: row, column: column };
 }
 
 function Move(oldPos, newPos) {
