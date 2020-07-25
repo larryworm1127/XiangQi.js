@@ -13,60 +13,42 @@ const fullBoardStart = function () {
 const midGameBoard = function () {
   // One of the ways to create JS object mapping for board content
   const midGameBoardContent = [
-    Position(0, 0, PIECES.chariot, SIDES.red),
-    Position(0, 8, PIECES.chariot, SIDES.red),
-    Position(0, 2, PIECES.elephant, SIDES.red),
-    Position(2, 4, PIECES.elephant, SIDES.red),
-    Position(0, 5, PIECES.advisor, SIDES.red),
-    Position(1, 4, PIECES.advisor, SIDES.red),
-    Position(2, 6, PIECES.horse, SIDES.red),
-    Position(4, 7, PIECES.cannon, SIDES.red),
-    Position(4, 0, PIECES.soldier, SIDES.red),
-    Position(4, 2, PIECES.soldier, SIDES.red),
-    Position(3, 4, PIECES.soldier, SIDES.red),
-    Position(4, 6, PIECES.soldier, SIDES.red),
-    Position(3, 8, PIECES.soldier, SIDES.red),
-    Position(0, 4, PIECES.general, SIDES.red),
-
-    Position(9, 1, PIECES.chariot, SIDES.black),
-    Position(3, 3, PIECES.chariot, SIDES.black),
-    Position(9, 2, PIECES.elephant, SIDES.black),
-    Position(9, 6, PIECES.elephant, SIDES.black),
-    Position(9, 5, PIECES.advisor, SIDES.black),
-    Position(8, 4, PIECES.advisor, SIDES.black),
-    Position(7, 0, PIECES.horse, SIDES.black),
-    Position(7, 4, PIECES.cannon, SIDES.black),
-    Position(6, 0, PIECES.soldier, SIDES.black),
-    Position(5, 4, PIECES.soldier, SIDES.black),
-    Position(6, 6, PIECES.soldier, SIDES.black),
-    Position(6, 8, PIECES.soldier, SIDES.black),
-    Position(9, 4, PIECES.general, SIDES.black),
+    [
+      Piece(PIECES.empty), Piece(PIECES.chariot, SIDES.black),
+      Piece(PIECES.empty), Piece(PIECES.empty), Piece(PIECES.general, SIDES.black),
+      Piece(PIECES.empty), Piece(PIECES.empty), Piece(PIECES.empty), Piece(PIECES.empty),
+    ],
+    new Array(9).fill(Piece(PIECES.empty)),
+    [
+      Piece(PIECES.empty), Piece(PIECES.horse, SIDES.black), Piece(PIECES.empty),
+      Piece(PIECES.empty), Piece(PIECES.elephant, SIDES.black), Piece(PIECES.advisor, SIDES.black),
+      Piece(PIECES.empty), Piece(PIECES.empty), Piece(PIECES.empty),
+    ],
+    new Array(9).fill(Piece(PIECES.empty)).map((item, index) => {
+      return (index === 4) ? Piece(PIECES.soldier, SIDES.black) : item;
+    }),
+    [
+      Piece(PIECES.empty), Piece(PIECES.chariot, SIDES.red), Piece(PIECES.empty),
+      Piece(PIECES.empty), Piece(PIECES.empty), Piece(PIECES.soldier, SIDES.red),
+      Piece(PIECES.empty), Piece(PIECES.empty), Piece(PIECES.empty),
+    ],
+    new Array(9).fill(Piece(PIECES.empty)).map((item, index) => {
+      return (index === 7) ? Piece(PIECES.horse, SIDES.red) : item;
+    }),
+    [
+      Piece(PIECES.soldier, SIDES.black), Piece(PIECES.empty), Piece(PIECES.empty),
+      Piece(PIECES.empty), Piece(PIECES.cannon, SIDES.red), Piece(PIECES.empty),
+      Piece(PIECES.empty), Piece(PIECES.cannon, SIDES.black), Piece(PIECES.chariot, SIDES.black)
+    ],
+    new Array(9).fill(Piece(PIECES.empty)).map((item, index) => {
+      return (index === 3) ? Piece(PIECES.advisor, SIDES.red) : item;
+    }),
+    new Array(9).fill(Piece(PIECES.empty)).map((item, index) => {
+      return (index === 4) ? Piece(PIECES.general, SIDES.red) : item;
+    }),
+    new Array(9).fill(Piece(PIECES.empty))
   ];
   const board = new XiangQi({ containerId: 'midGameBoard', boardContent: midGameBoardContent });
-};
-
-const lateGameBoard = function () {
-  // Board content can also be loaded in from JSON files
-  // The string below would ideally be in a JSON file but is extracted for demo
-  const lateGameBoardContent =
-    '[{"side": "b", "row": 0, "column": 1, "type": "Chariot"},' +
-    '{"side": "b", "row": 0, "column": 4, "type": "General"},' +
-    '{"side": "b", "row": 2, "column": 1, "type": "Horse"},' +
-    '{"side": "b", "row": 2, "column": 4, "type": "Elephant"},' +
-    '{"side": "b", "row": 2, "column": 5, "type": "Advisor"},' +
-    '{"side": "b", "row": 3, "column": 4, "type": "Soldier"},' +
-    '{"side": "b", "row": 6, "column": 0, "type": "Soldier"},' +
-    '{"side": "b", "row": 6, "column": 7, "type": "Cannon"},' +
-    '{"side": "b", "row": 6, "column": 8, "type": "Chariot"},' +
-    '{"side": "r", "row": 4, "column": 1, "type": "Chariot"},' +
-    '{"side": "r", "row": 4, "column": 5, "type": "Soldier"},' +
-    '{"side": "r", "row": 5, "column": 7, "type": "Horse"},' +
-    '{"side": "r", "row": 6, "column": 4, "type": "Cannon"},' +
-    '{"side": "r", "row": 7, "column": 3, "type": "Advisor"},' +
-    '{"side": "r", "row": 8, "column": 4, "type": "General"}]';
-
-  const boardContent = JSON.parse(lateGameBoardContent);
-  const board = new XiangQi({ containerId: 'lateGameBoard', boardContent: boardContent });
 };
 
 const interactiveBoard = function () {
@@ -133,10 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
   fullBoardStart();
 
   // Create mid game board
-  // midGameBoard();
-
-  // Create late game board
-  // lateGameBoard();
+  midGameBoard();
 
   // Create larger size board
   largerBoard();
