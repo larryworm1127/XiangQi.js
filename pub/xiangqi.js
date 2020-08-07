@@ -187,24 +187,24 @@ XiangQi.prototype = {
     board.style.height = `${this.boardHeight}px`;
 
     // Add square div
-    for (let row = 0; row < NUM_ROWS; row++) {
+    this.board.getBoardContent().forEach((row, rowIndex) => {
       const rowDiv = document.createElement('div');
       rowDiv.className = CSS.row;
 
-      for (let col = 0; col < NUM_COLS; col++) {
+      row.forEach(() => {
         const square = document.createElement('div');
         square.className = CSS.square;
         square.style.width = `${this.squareSize}px`;
         square.style.height = `${this.squareSize}px`;
         rowDiv.appendChild(square);
-        this.boardSquares[row].push(square);
-      }
+        this.boardSquares[rowIndex].push(square);
+      });
 
       const clear = document.createElement('div');
       clear.className = CSS.clear;
       rowDiv.appendChild(clear);
       board.appendChild(rowDiv);
-    }
+    });
 
     this.containerElement.appendChild(board);
   },
@@ -221,12 +221,17 @@ XiangQi.prototype = {
   },
 
   _drawSideBar: function () {
+    // Create sidebar container
     const sideBar = document.createElement('div');
     sideBar.className = CSS.sideBar;
     sideBar.style.width = `${this.squareSize * 2}px`;
     sideBar.style.height = `${this.boardHeight}px`;
 
     this.containerElement.appendChild(sideBar);
+
+    // Get and display piece counts
+    const pieceCount = this._getPieceCounts();
+    // pieceCount;
   },
 
   _removePieceDOM: function (row, col) {
@@ -254,20 +259,25 @@ XiangQi.prototype = {
   },
 
   _getPieceCounts: function () {
-    // TODO: finish this
     const result = {
-      red: {},
-      black: {}
+      r: {},
+      b: {}
     };
-    Object.keys(PIECES).forEach((piece) => {
-      result.red[piece] = 0;
-      result.black[piece] = 0;
+    Object.values(PIECES).forEach((piece) => {
+      if (piece !== PIECES.empty) {
+        result.r[piece] = 0;
+        result.b[piece] = 0;
+      }
     });
-    this.boardSquares.forEach((row) => {
-      row.forEach((square) => {
 
+    this.board.getBoardContent().forEach((row) => {
+      row.forEach((square) => {
+        if (square.type !== PIECES.empty) {
+          result[square.side][square.type] += 1;
+        }
       });
     });
+    return result;
   }
 };
 
