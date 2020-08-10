@@ -71,9 +71,15 @@ class Board {
     return JSON.parse(JSON.stringify(this.board));
   };
 
+  removePiece = (row, col) => {
+    this.board[row][col] = Piece(PIECES.empty);
+  };
+
   clearBoard = () => {
-    this.board = this.board.map(() => {
-      return new Array(NUM_COLS).fill(Piece(PIECES.empty));
+    this.board.forEach((row, rowIndex) => {
+      row.forEach((_, colIndex) => {
+        this.removePiece(rowIndex, colIndex);
+      });
     });
   };
 
@@ -200,12 +206,15 @@ XiangQi.prototype = {
 
   removePiece: function (row, col) {
     this._removePieceDOM(row, col);
+    this.board.removePiece(row, col);
   },
 
   drawSideBar: function () {
     if (!this.hasSideBar) {
       this._drawSideBar();
       this.hasSideBar = true;
+    } else {
+      this._updateSideBar();
     }
   },
 
@@ -259,8 +268,8 @@ XiangQi.prototype = {
 
     const sideBarTitle = document.createElement('p');
     sideBarTitle.textContent = 'Piece Counts';
-    sideBarTitle.className = CSS.sideBarTitle
-    sideBar.appendChild(sideBarTitle)
+    sideBarTitle.className = CSS.sideBarTitle;
+    sideBar.appendChild(sideBarTitle);
 
     // Get and display piece counts
     const pieceCount = this.board.getPieceCounts();
@@ -278,7 +287,8 @@ XiangQi.prototype = {
         pieceElement.textContent = `${count}`;
         pieceDiv.appendChild(pieceElement);
 
-        const countElement = document.createTextNode(`${count}`);
+        const countElement = document.createElement('span');
+        countElement.textContent = `${count}`;
         pieceDiv.appendChild(countElement);
 
         sideDiv.appendChild(pieceDiv);
@@ -289,6 +299,20 @@ XiangQi.prototype = {
 
     // Add sidebar div to main container
     this.containerElement.appendChild(sideBar);
+  },
+
+  _updateSideBar: function () {
+    const pieceCount = this.board.getPieceCounts();
+    console.log(pieceCount);
+    const sideDivs = document.getElementsByClassName(CSS.sideBarSide);
+    Object.values(pieceCount).forEach((pieceTypes, index) => {
+      const sideDiv = sideDivs.item(index).children;
+
+      Object.values(pieceTypes).forEach((count, index) => {
+        const pieceDiv = sideDiv.item(index).children.item(1);
+        pieceDiv.textContent = `${count}`;
+      });
+    });
   },
 
   _removePieceDOM: function (row, col) {
