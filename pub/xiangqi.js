@@ -7,7 +7,9 @@ const CSS = {
   square: 'square',
   clear: 'clear',
   row: 'row',
-  sideBar: 'side-bar'
+  sideBar: 'side-bar',
+  sideBarSide: 'side-bar-side',
+  sideBarTitle: 'side-bar-title'
 };
 const PIECE_PATH = 'assets/pieces/';
 
@@ -80,6 +82,28 @@ class Board {
       return row.slice();
     });
   };
+
+  getPieceCounts = () => {
+    const result = {
+      r: {},
+      b: {}
+    };
+    Object.values(PIECES).forEach((piece) => {
+      if (piece !== PIECES.empty) {
+        result.r[piece] = 0;
+        result.b[piece] = 0;
+      }
+    });
+
+    this.board.forEach((row) => {
+      row.forEach((square) => {
+        if (square.type !== PIECES.empty) {
+          result[square.side][square.type] += 1;
+        }
+      });
+    });
+    return result;
+  };
 }
 
 
@@ -112,6 +136,7 @@ function XiangQi(inputConfig) {
   this.boardHeight = (this.boardWidth / NUM_COLS) * NUM_ROWS;
   this.boardSquares = [[], [], [], [], [], [], [], [], [], []];
   this.board = new Board(this.config);
+  this.hasSideBar = this.config.showSideBar;
 
   // Draw board and its content if delayDraw is disabled in config
   if (!this.config.delayDraw) {
@@ -177,6 +202,13 @@ XiangQi.prototype = {
     this._removePieceDOM(row, col);
   },
 
+  drawSideBar: function () {
+    if (!this.hasSideBar) {
+      this._drawSideBar();
+      this.hasSideBar = true;
+    }
+  },
+
   // ======================================================================
   // DOM manipulation functions
   // ======================================================================
@@ -224,14 +256,39 @@ XiangQi.prototype = {
     // Create sidebar container
     const sideBar = document.createElement('div');
     sideBar.className = CSS.sideBar;
-    sideBar.style.width = `${this.squareSize * 2}px`;
-    sideBar.style.height = `${this.boardHeight}px`;
 
-    this.containerElement.appendChild(sideBar);
+    const sideBarTitle = document.createElement('p');
+    sideBarTitle.textContent = 'Piece Counts';
+    sideBarTitle.className = CSS.sideBarTitle
+    sideBar.appendChild(sideBarTitle)
 
     // Get and display piece counts
-    const pieceCount = this._getPieceCounts();
-    // pieceCount;
+    const pieceCount = this.board.getPieceCounts();
+    Object.entries(pieceCount).forEach(([side, pieceTypes]) => {
+      const sideDiv = document.createElement('div');
+      sideDiv.className = CSS.sideBarSide;
+
+      Object.entries(pieceTypes).forEach(([pieceType, count]) => {
+        const pieceDiv = document.createElement('div');
+
+        const pieceElement = document.createElement('img');
+        pieceElement.src = `${PIECE_PATH}${side}${pieceType}.svg`;
+        pieceElement.style.width = `${this.squareSize}px`;
+        pieceElement.style.height = `${this.squareSize}px`;
+        pieceElement.textContent = `${count}`;
+        pieceDiv.appendChild(pieceElement);
+
+        const countElement = document.createTextNode(`${count}`);
+        pieceDiv.appendChild(countElement);
+
+        sideDiv.appendChild(pieceDiv);
+      });
+
+      sideBar.appendChild(sideDiv);
+    });
+
+    // Add sidebar div to main container
+    this.containerElement.appendChild(sideBar);
   },
 
   _removePieceDOM: function (row, col) {
@@ -257,28 +314,6 @@ XiangQi.prototype = {
       redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
     };
   },
-
-  _getPieceCounts: function () {
-    const result = {
-      r: {},
-      b: {}
-    };
-    Object.values(PIECES).forEach((piece) => {
-      if (piece !== PIECES.empty) {
-        result.r[piece] = 0;
-        result.b[piece] = 0;
-      }
-    });
-
-    this.board.getBoardContent().forEach((row) => {
-      row.forEach((square) => {
-        if (square.type !== PIECES.empty) {
-          result[square.side][square.type] += 1;
-        }
-      });
-    });
-    return result;
-  }
 };
 
 const getStartBoard = function (redOnBottom) {

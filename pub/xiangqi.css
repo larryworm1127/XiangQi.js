@@ -17,10 +17,20 @@
 }
 
 .side-bar {
-    position: relative;
+    position: absolute;
     margin-left: 10px;
     padding: 5px;
     display: inline-block;
     box-sizing: content-box;
     border: 2px solid black;
+}
+
+.side-bar-side {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.side-bar-title {
+    text-align: center;
+    font-weight: bold;
 }
