@@ -154,6 +154,41 @@ function XiangQi(inputConfig) {
   if (this.config.showSideBar) {
     this._drawSideBar();
   }
+
+  if (this.draggable) {
+    const piece = this.boardSquares[0][0];
+    piece.onmousedown = function (event) {
+      // (1) prepare to moving: make absolute and on top by z-index
+      piece.style.position = 'absolute';
+      piece.style.zIndex = 1000;
+
+      // move it out of any current parents directly into body
+      // to make it positioned relative to the body
+      document.body.append(piece);
+
+      // centers the ball at (pageX, pageY) coordinates
+      function moveAt(pageX, pageY) {
+        piece.style.left = pageX - piece.offsetWidth / 2 + 'px';
+        piece.style.top = pageY - piece.offsetHeight / 2 + 'px';
+      }
+
+      // move our absolutely positioned ball under the pointer
+      moveAt(event.pageX, event.pageY);
+
+      function onMouseMove(event) {
+        moveAt(event.pageX, event.pageY);
+      }
+
+      // (2) move the ball on mousemove
+      document.addEventListener('mousemove', onMouseMove);
+
+      // (3) drop the ball, remove unneeded handlers
+      piece.onmouseup = function() {
+        document.removeEventListener('mousemove', onMouseMove);
+        piece.onmouseup = null;
+      };
+    };
+  }
 }
 
 XiangQi.prototype = {
