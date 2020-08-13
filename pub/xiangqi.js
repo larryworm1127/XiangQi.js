@@ -133,10 +133,11 @@ function Move(oldPos, newPos) {
 // Main library function
 // ======================================================================
 function XiangQi(inputConfig) {
-  this.config = this._buildConfig(inputConfig);
+  this.config = _buildConfig(inputConfig);
   this.boardWidth = this.config.boardSize;
   this.containerElement = this.config.container;
-  this.draggable = this.config.draggable;
+  // this.draggable = this.config.draggable;
+  this.draggable = true;
 
   this.squareSize = (this.boardWidth - 2) / NUM_COLS;
   this.boardHeight = (this.boardWidth / NUM_COLS) * NUM_ROWS;
@@ -156,37 +157,12 @@ function XiangQi(inputConfig) {
   }
 
   if (this.draggable) {
-    const piece = this.boardSquares[0][0];
-    piece.onmousedown = function (event) {
-      // (1) prepare to moving: make absolute and on top by z-index
-      piece.style.position = 'absolute';
-      piece.style.zIndex = 1000;
-
-      // move it out of any current parents directly into body
-      // to make it positioned relative to the body
-      document.body.append(piece);
-
-      // centers the ball at (pageX, pageY) coordinates
-      function moveAt(pageX, pageY) {
-        piece.style.left = pageX - piece.offsetWidth / 2 + 'px';
-        piece.style.top = pageY - piece.offsetHeight / 2 + 'px';
-      }
-
-      // move our absolutely positioned ball under the pointer
-      moveAt(event.pageX, event.pageY);
-
-      function onMouseMove(event) {
-        moveAt(event.pageX, event.pageY);
-      }
-
-      // (2) move the ball on mousemove
-      document.addEventListener('mousemove', onMouseMove);
-
-      // (3) drop the ball, remove unneeded handlers
-      piece.onmouseup = function() {
-        document.removeEventListener('mousemove', onMouseMove);
-        piece.onmouseup = null;
-      };
+    const piece = this.boardSquares[0][0].firstChild;
+    piece.onmousedown = (event) => {
+      this._mouseDownDragHandler(event, piece);
+    };
+    piece.ondragstart = function () {
+      return false;
     };
   }
 }
@@ -357,23 +333,106 @@ XiangQi.prototype = {
     }
   },
 
-  // ======================================================================
-  // Utility functions
-  // ======================================================================
-  _buildConfig: function (inputConfig) {
-    const config = (inputConfig === undefined) ? {} : inputConfig;
-    return {
-      boardSize: ('boardSize' in config) ? config['boardSize'] : 400,
-      container: ('containerId' in config) ? document.getElementById(config['containerId']) : document.body,
-      boardContent: ('boardContent' in config) ? config['boardContent'] : [],
-      startPos: ('startPos' in config) ? config['startPos'] : false,
-      showSideBar: ('showSideBar' in config) ? config['showSideBar'] : false,
-      draggable: ('draggable' in config) ? config['draggable'] : false,
-      delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
-      redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
-    };
+  _mouseDownDragHandler: function (event, piece) {
+    let lastSquare = null;
+    let currentSquare = null;
+
+    const shiftX = event.clientX - piece.getBoundingClientRect().left;
+    const shiftY = event.clientY - piece.getBoundingClientRect().top;
+
+    // (1) prepare to moving: make absolute and on top by z-index
+    piece.style.position = 'absolute';
+    piece.style.zIndex = '1000';
+
+    // move it out of any current parents directly into body
+    // to make it positioned relative to the body
+    document.body.append(piece);
+
+    // move our absolutely positioned ball under the pointer
+    _moveAt(event.pageX, event.pageY);
+
+    // centers the ball at (pageX, pageY) coordinates
+    function _moveAt(pageX, pageY) {
+      piece.style.left = pageX - shiftX + 'px';
+      piece.style.top = pageY - shiftY + 'px';
+    }
+
+    function _mouseMoveDragHandler(event) {
+      _moveAt(event.pageX, event.pageY);
+      piece.hidden = true;
+      const elemBelow = document.elementFromPoint(event.clientX, event.clientY);
+      piece.hidden = false;
+
+      if (!elemBelow) {
+        return;
+      }
+
+      const squareBelow = elemBelow.closest('.square');
+      if (currentSquare !== squareBelow) {
+        if (currentSquare) {
+          _leaveSquare(currentSquare);
+        }
+        lastSquare = currentSquare;
+        currentSquare = squareBelow;
+        if (currentSquare) {
+          _enterSquare(currentSquare);
+        }
+      }
+    }
+
+    // move the ball on mousemove
+    document.addEventListener('mousemove', _mouseMoveDragHandler);
+
+    piece.onmouseup = () => {
+      this._mouseUpDragHandler(piece, _mouseMoveDragHandler, currentSquare, lastSquare)
+    }
+  },
+
+  _mouseUpDragHandler: function (piece, _mouseMoveDragHandler, currentSquare, lastSquare) {
+    // Clear mousemove handlers
+    document.removeEventListener('mousemove', _mouseMoveDragHandler);
+    piece.onmouseup = null;
+
+    // Clear square highlight
+    _leaveSquare(currentSquare);
+    if (!currentSquare.firstChild) {
+      currentSquare.appendChild(piece);
+    } else {
+      lastSquare.appendChild(piece);
+    }
+    piece.style.position = 'static';
+    piece.style.zIndex = '0';
   },
 };
+
+
+// ======================================================================
+// Utility functions
+// ======================================================================
+const _buildConfig = function (inputConfig) {
+  const config = (inputConfig === undefined) ? {} : inputConfig;
+  return {
+    boardSize: ('boardSize' in config) ? config['boardSize'] : 400,
+    container: ('containerId' in config) ? document.getElementById(config['containerId']) : document.body,
+    boardContent: ('boardContent' in config) ? config['boardContent'] : [],
+    startPos: ('startPos' in config) ? config['startPos'] : false,
+    showSideBar: ('showSideBar' in config) ? config['showSideBar'] : false,
+    draggable: ('draggable' in config) ? config['draggable'] : false,
+    delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
+    redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
+  };
+};
+
+
+const _enterSquare = function (elem) {
+  elem.style.background = 'pink';
+};
+
+
+const _leaveSquare = function (elem) {
+  elem.style.background = '';
+};
+
 
 const getStartBoard = function (redOnBottom) {
   const topSide = (redOnBottom) ? SIDES.black : SIDES.red;
