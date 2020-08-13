@@ -157,13 +157,7 @@ function XiangQi(inputConfig) {
   }
 
   if (this.draggable) {
-    const piece = this.boardSquares[0][0].firstChild;
-    piece.onmousedown = (event) => {
-      this._mouseDownDragHandler(event, piece);
-    };
-    piece.ondragstart = function () {
-      return false;
-    };
+    this.makeDraggable();
   }
 }
 
@@ -227,6 +221,22 @@ XiangQi.prototype = {
     } else {
       this._updateSideBar();
     }
+  },
+
+  makeDraggable: function () {
+    this.boardSquares.forEach((row) => {
+      row.forEach(({ firstChild }) => {
+        if (firstChild) {
+          firstChild.onmousedown = (event) => {
+            this._mouseDownDragHandler(event, firstChild);
+          };
+
+          firstChild.ondragstart = () => {
+            return false;
+          };
+        }
+      });
+    });
   },
 
   // ======================================================================
@@ -384,8 +394,8 @@ XiangQi.prototype = {
     document.addEventListener('mousemove', _mouseMoveDragHandler);
 
     piece.onmouseup = () => {
-      this._mouseUpDragHandler(piece, _mouseMoveDragHandler, currentSquare, lastSquare)
-    }
+      this._mouseUpDragHandler(piece, _mouseMoveDragHandler, currentSquare, lastSquare);
+    };
   },
 
   _mouseUpDragHandler: function (piece, _mouseMoveDragHandler, currentSquare, lastSquare) {
