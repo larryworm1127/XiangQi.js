@@ -136,8 +136,7 @@ function XiangQi(inputConfig) {
   this.config = _buildConfig(inputConfig);
   this.boardWidth = this.config.boardSize;
   this.containerElement = this.config.container;
-  // this.draggable = this.config.draggable;
-  this.draggable = true;
+  this.draggable = this.config.draggable;
 
   this.squareSize = (this.boardWidth - 2) / NUM_COLS;
   this.boardHeight = (this.boardWidth / NUM_COLS) * NUM_ROWS;
@@ -224,11 +223,11 @@ XiangQi.prototype = {
   },
 
   makeDraggable: function () {
-    this.boardSquares.forEach((row) => {
-      row.forEach(({ firstChild }) => {
+    this.boardSquares.forEach((row, rowIndex) => {
+      row.forEach(({ firstChild }, colIndex) => {
         if (firstChild) {
           firstChild.onmousedown = (event) => {
-            this._mouseDownDragHandler(event, firstChild);
+            this._mouseDownDragHandler(event, firstChild, rowIndex, colIndex);
           };
 
           firstChild.ondragstart = () => {
@@ -253,9 +252,10 @@ XiangQi.prototype = {
       const rowDiv = document.createElement('div');
       rowDiv.className = CSS.row;
 
-      row.forEach(() => {
+      row.forEach((_, colIndex) => {
         const square = document.createElement('div');
         square.className = CSS.square;
+        square.id = `${rowIndex}-${colIndex}`;
         square.style.width = `${this.squareSize}px`;
         square.style.height = `${this.squareSize}px`;
         rowDiv.appendChild(square);
@@ -343,9 +343,11 @@ XiangQi.prototype = {
     }
   },
 
-  _mouseDownDragHandler: function (event, piece) {
+  _mouseDownDragHandler: function (event, piece, rowIndex, colIndex) {
     let lastSquare = null;
     let currentSquare = null;
+    const lastPosition = new Position(rowIndex, colIndex);
+    const board = this.board;
 
     const shiftX = event.clientX - piece.getBoundingClientRect().left;
     const shiftY = event.clientY - piece.getBoundingClientRect().top;
@@ -359,26 +361,29 @@ XiangQi.prototype = {
     document.body.append(piece);
 
     // move our absolutely positioned ball under the pointer
-    _moveAt(event.pageX, event.pageY);
-
-    // centers the ball at (pageX, pageY) coordinates
-    function _moveAt(pageX, pageY) {
-      piece.style.left = pageX - shiftX + 'px';
-      piece.style.top = pageY - shiftY + 'px';
-    }
+    _moveAt(event.pageX, event.pageY, shiftX, shiftY, piece);
 
     function _mouseMoveDragHandler(event) {
-      _moveAt(event.pageX, event.pageY);
+      _moveAt(event.pageX, event.pageY, shiftX, shiftY, piece);
       piece.hidden = true;
       const elemBelow = document.elementFromPoint(event.clientX, event.clientY);
       piece.hidden = false;
 
+      // Don't do anything if there is nothing below dragged element
       if (!elemBelow) {
         return;
       }
 
       const squareBelow = elemBelow.closest('.square');
       if (currentSquare !== squareBelow) {
+        // Update virtual board
+        const posStr = squareBelow.id.split('-')
+        const newMove = new Position(parseInt(posStr[0]), parseInt(posStr[1]))
+        board.move(new Move(lastPosition, newMove))
+        lastPosition.row = newMove.row
+        lastPosition.column = newMove.column
+
+        // Update square tracking
         if (currentSquare) {
           _leaveSquare(currentSquare);
         }
@@ -431,6 +436,12 @@ const _buildConfig = function (inputConfig) {
     delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
     redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
   };
+};
+
+// centers the ball at (pageX, pageY) coordinates
+const _moveAt = function (pageX, pageY, shiftX, shiftY, piece) {
+  piece.style.left = `${pageX - shiftX}px`;
+  piece.style.top = `${pageY - shiftY}px`;
 };
 
 
