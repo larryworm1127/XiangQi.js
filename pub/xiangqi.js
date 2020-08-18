@@ -618,7 +618,7 @@ const getValidMoves = function (piece, pos, board) {
     }
 
     function getHorseMoves() {
-
+      
     }
 
     function getSoldierMoves() {
@@ -646,22 +646,6 @@ const getValidMoves = function (piece, pos, board) {
           new Position(pos.row - 1, pos.column)
         ];
       }
-    }
-
-    function getCRMoves() {
-      const possibleMoves = [];
-      for (let column = 0; column < NUM_COLS; column++) {
-        if (column !== pos.column) {
-          possibleMoves.push(new Position(pos.row, column));
-        }
-      }
-
-      for (let row = 0; row < NUM_ROWS; row++) {
-        if (row !== pos.row) {
-          possibleMoves.push(new Position(row, pos.column));
-        }
-      }
-      return possibleMoves;
     }
   }
 ;
