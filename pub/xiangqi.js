@@ -9,7 +9,8 @@ const CSS = {
   row: 'row',
   sideBar: 'side-bar',
   sideBarSide: 'side-bar-side',
-  sideBarTitle: 'side-bar-title'
+  sideBarTitle: 'side-bar-title',
+  highlightSquare: 'highlight-square'
 };
 const PIECE_PATH = 'assets/pieces/';
 
@@ -49,6 +50,9 @@ class Board {
     } else {
       this.board = new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(Piece(PIECES.empty)));
     }
+
+    this.selectedSquare = { row: 0, column: 0 };
+    this.previousMoves = [];
   }
 
   /**
@@ -138,6 +142,19 @@ class Board {
       });
     });
     return result;
+  };
+
+  getSelectedSquare = () => {
+    return this.selectedSquare;
+  };
+
+  updateSelectedSquare = (row, col) => {
+    this.selectedSquare.row = row;
+    this.selectedSquare.column = col;
+  };
+
+  getPreviousMove = () => {
+    return [...this.previousMoves];
   };
 }
 
@@ -255,16 +272,12 @@ XiangQi.prototype = {
   },
 
   makeDraggable: function () {
+    // Add drag handlers for each square
     this.boardSquares.forEach((row, rowIndex) => {
       row.forEach(({ firstChild }, colIndex) => {
         if (firstChild) {
-          firstChild.onmousedown = (event) => {
-            this._mouseDownDragHandler(event, firstChild, rowIndex, colIndex);
-          };
-
-          firstChild.ondragstart = () => {
-            return false;
-          };
+          firstChild.onmousedown = (event) => this._mouseDownDragHandler(event, firstChild, rowIndex, colIndex);
+          firstChild.ondragstart = () => false;
         }
       });
     });
@@ -282,7 +295,19 @@ XiangQi.prototype = {
   },
 
   makeClickable: function () {
-    
+    this.removeDraggable();
+
+    // Add onclick handler for each square
+    this.boardSquares.forEach((row, rowIndex) => {
+      row.forEach((square, colIndex) => {
+        square.onclick = (event) => {
+          console.log(event.target.tagName);
+          if (event.target.tagName === 'IMG') {
+            this._squareOnClickHandler(event, rowIndex, colIndex);
+          }
+        };
+      });
+    });
   },
 
   // ======================================================================
@@ -370,7 +395,7 @@ XiangQi.prototype = {
 
   _updateSideBar: function () {
     const pieceCount = this.board.getPieceCounts();
-    console.log(pieceCount);
+
     const sideDivs = document.getElementsByClassName(CSS.sideBarSide);
     Object.values(pieceCount).forEach((pieceTypes, index) => {
       const sideDiv = sideDivs.item(index).children;
@@ -421,7 +446,7 @@ XiangQi.prototype = {
       }
 
       const squareBelow = elemBelow.closest('.square');
-      if (currentSquare !== squareBelow) {
+      if (squareBelow && currentSquare !== squareBelow) {
         // Update virtual board
         const posStr = squareBelow.id.split('-');
         const newMove = new Position(parseInt(posStr[0]), parseInt(posStr[1]));
@@ -464,6 +489,21 @@ XiangQi.prototype = {
     piece.style.position = 'static';
     piece.style.zIndex = '0';
   },
+
+  _squareOnClickHandler: function (event, row, col) {
+    // Remove previous highlight
+    const previousSquare = this.board.getSelectedSquare();
+    this.boardSquares[previousSquare.row][previousSquare.column].classList.remove(CSS.highlightSquare);
+
+    // Add highlight to selected square
+    this.boardSquares[row][col].classList.add(CSS.highlightSquare);
+
+    // Show possible moves
+    const moves = getValidMoves(row, col, this.board);
+    console.log(moves);
+
+    this.board.updateSelectedSquare(row, col);
+  }
 };
 
 
@@ -494,16 +534,22 @@ const _moveAt = function (pageX, pageY, shiftX, shiftY, piece) {
 
 
 const _enterSquare = function (elem) {
-  elem.style.background = 'pink';
+  if (elem) {
+    elem.classList.add(CSS.highlightSquare);
+  }
 };
 
 
 const _leaveSquare = function (elem) {
-  elem.style.background = '';
+  if (elem) {
+    elem.classList.remove(CSS.highlightSquare);
+  }
 };
 
 
-const getValidMoves = function (piece, pos, board) {
+const getValidMoves = function (row, col, board) {
+  const piece = board.getSquare(row, col);
+  const pos = new Position(row, col);
   switch (piece.type) {
     case PIECES.general:
       return getGeneralMoves();
@@ -548,9 +594,9 @@ const getValidMoves = function (piece, pos, board) {
 
     return possibleMoves.filter((move) => {
       return (
-        move.column >= 3 & move.column >= 5 &
+        move.column >= 3 & move.column <= 5 &
         ((move.row >= 0 & move.row <= 2) ||
-          (move.row <= NUM_ROWS - 1 || move.row > NUM_ROWS - 3))
+          (move.row <= NUM_ROWS - 1 & move.row > NUM_ROWS - 3))
       );
     });
   }
@@ -596,30 +642,42 @@ const getValidMoves = function (piece, pos, board) {
 
   function getChariotMoves() {
     const possibleMoves = [];
+    const boardContent = board.getBoardContent();
 
-    const rowContent = board.getRow(pos.row);
-    for (let col = 0; col < rowContent.length; col++) {
-      if (col === pos.column) {
-        continue;
-      }
-      const square = rowContent[col];
-      if (square.type === PIECES.empty) {
+    let rowBelow = pos.row + 1;
+    while (rowBelow < NUM_ROWS) {
+      if (boardContent[rowBelow][pos.column].type !== PIECES.empty) {
         break;
       }
-      possibleMoves.push(new Position(pos.row, col));
+      possibleMoves.push(new Position(rowBelow, pos.column));
+      rowBelow += 1;
     }
 
-    const colContent = board.getColumn(pos.column);
-    for (let row = 0; row < colContent.length; row++) {
-      if (row === pos.row) {
-        continue;
-      }
-
-      const square = colContent[row];
-      if (square.type !== PIECES.empty) {
+    let rowAbove = pos.row - 1;
+    while (rowAbove >= 0) {
+      if (boardContent[rowAbove][pos.column].type !== PIECES.empty) {
         break;
       }
-      possibleMoves.push(new Position(row, pos.column));
+      possibleMoves.push(new Position(rowAbove, pos.column));
+      rowAbove -= 1;
+    }
+
+    let colRight = pos.column + 1;
+    while (colRight < NUM_COLS) {
+      if (boardContent[pos.row][colRight].type !== PIECES.empty) {
+        break;
+      }
+      possibleMoves.push(new Position(pos.row, colRight));
+      colRight += 1;
+    }
+
+    let colLeft = pos.column - 1;
+    while (colLeft >= 0) {
+      if (boardContent[pos.row][colLeft].type !== PIECES.empty) {
+        break;
+      }
+      possibleMoves.push(new Position(pos.row, colLeft));
+      colLeft -= 1;
     }
     return possibleMoves;
   }
@@ -634,9 +692,9 @@ const getValidMoves = function (piece, pos, board) {
 
     return possibleMoves.filter((move) => {
       return (
-        move.column >= 0 & move.column >= NUM_COLS &
+        move.column >= 0 & move.column <= NUM_COLS &
         ((move.row >= 0 & move.row <= 4) ||
-          (move.row <= NUM_ROWS - 1 || move.row > NUM_ROWS - 5))
+          (move.row <= NUM_ROWS - 1 & move.row > NUM_ROWS - 5))
       );
     });
   }
@@ -674,29 +732,40 @@ const getValidMoves = function (piece, pos, board) {
   }
 
   function getSoldierMoves() {
-    if (board.getRedOnTop()) {
+    console.log(board.getRedOnTop());
+    const onTop = (board.getRedOnTop() && piece.side === SIDES.red) || (!board.getRedOnTop() && piece.side !== SIDES.red);
+    if (onTop) {
       if (pos.row < 5) {
         return [new Position(pos.row + 1, pos.column)];
-      } else if (pos.row === 0) {
-        return [new Position(pos.row, pos.column + 1), new Position(pos.row, pos.column - 1)];
       }
       return [
         new Position(pos.row, pos.column + 1),
         new Position(pos.row, pos.column - 1),
         new Position(pos.row + 1, pos.column)
-      ];
-
+      ].filter((position) => {
+        return (
+          position.row >= 0 &&
+          position.row < NUM_ROWS &&
+          position.column >= 0 &&
+          position.column < NUM_COLS
+        );
+      });
     } else {
       if (pos.row > 4) {
         return [new Position(pos.row - 1, pos.column)];
-      } else if (pos.row === NUM_ROWS - 1) {
-        return [new Position(pos.row, pos.column + 1), new Position(pos.row, pos.column - 1)];
       }
       return [
         new Position(pos.row, pos.column + 1),
         new Position(pos.row, pos.column - 1),
         new Position(pos.row - 1, pos.column)
-      ];
+      ].filter((position) => {
+        return (
+          position.row >= 0 &&
+          position.row < NUM_ROWS &&
+          position.column >= 0 &&
+          position.column < NUM_COLS
+        );
+      });
     }
   }
 };
