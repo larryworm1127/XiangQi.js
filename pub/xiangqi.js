@@ -187,6 +187,8 @@ function XiangQi(inputConfig) {
 
   if (this.draggable) {
     this.makeDraggable();
+  } else if (this.clickable) {
+    this.makeClickable();
   }
 }
 
@@ -277,6 +279,10 @@ XiangQi.prototype = {
         }
       });
     });
+  },
+
+  makeClickable: function () {
+    
   },
 
   // ======================================================================
