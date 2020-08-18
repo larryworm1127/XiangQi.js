@@ -272,8 +272,8 @@ XiangQi.prototype = {
     this.boardSquares.forEach((row) => {
       row.forEach(({ firstChild }) => {
         if (firstChild) {
-          firstChild.removeAttribute('onmousedown', this._mouseDownDragHandler);
-          firstChild.removeAttribute('ondragstart');
+          firstChild.onmousedown = null;
+          firstChild.ondragstart = null;
         }
       });
     });
