@@ -54,21 +54,46 @@ class Board {
   /**
    * Precondition: the move is valid
    *
-   * @param move A move object that instructs function of what to move.
+   * @param moveObj A move object that instructs function of what to move.
    */
-  move = (move) => {
-    const square = this.board[move.oldPos.row][move.oldPos.column];
+  move = (moveObj) => {
+    const square = this.board[moveObj.oldPos.row][moveObj.oldPos.column];
     if (square.type === PIECES.empty) {
       return false;
     }
 
-    this.board[move.oldPos.row][move.oldPos.column] = Piece(PIECES.empty);
-    this.board[move.newPos.row][move.newPos.column] = square;
+    this.board[moveObj.oldPos.row][moveObj.oldPos.column] = Piece(PIECES.empty);
+    this.board[moveObj.newPos.row][moveObj.newPos.column] = square;
     return true;
   };
 
   getBoardContent = () => {
     return JSON.parse(JSON.stringify(this.board));
+  };
+
+  getRow = (row) => {
+    return this.board[row];
+  };
+
+  getColumn = (column) => {
+    return this.board.map((row) => {
+      return row[column];
+    });
+  };
+
+  getRedOnTop = () => {
+    return this.getPiecePos(new Piece(PIECES.general, SIDES.red)).row in [0, 1, 2];
+  };
+
+  getPiecePos = (piece) => {
+    for (let row = 0; row < NUM_ROWS; row++) {
+      for (let col = 0; col < NUM_COLS; col++) {
+        const square = this.board[row][col];
+        if (square.type === piece.type && square.side === piece.side) {
+          return new Position(row, col);
+        }
+      }
+    }
   };
 
   removePiece = (row, col) => {
@@ -305,7 +330,6 @@ XiangQi.prototype = {
         pieceElement.src = `${PIECE_PATH}${side}${pieceType}.svg`;
         pieceElement.style.width = `${this.squareSize}px`;
         pieceElement.style.height = `${this.squareSize}px`;
-        pieceElement.textContent = `${count}`;
         pieceDiv.appendChild(pieceElement);
 
         const countElement = document.createElement('span');
@@ -377,11 +401,11 @@ XiangQi.prototype = {
       const squareBelow = elemBelow.closest('.square');
       if (currentSquare !== squareBelow) {
         // Update virtual board
-        const posStr = squareBelow.id.split('-')
-        const newMove = new Position(parseInt(posStr[0]), parseInt(posStr[1]))
-        board.move(new Move(lastPosition, newMove))
-        lastPosition.row = newMove.row
-        lastPosition.column = newMove.column
+        const posStr = squareBelow.id.split('-');
+        const newMove = new Position(parseInt(posStr[0]), parseInt(posStr[1]));
+        board.move(new Move(lastPosition, newMove));
+        lastPosition.row = newMove.row;
+        lastPosition.column = newMove.column;
 
         // Update square tracking
         if (currentSquare) {
@@ -453,6 +477,194 @@ const _enterSquare = function (elem) {
 const _leaveSquare = function (elem) {
   elem.style.background = '';
 };
+
+
+const getValidMoves = function (piece, pos, board) {
+    switch (piece.type) {
+      case PIECES.general:
+        return getGeneralMoves();
+      case PIECES.advisor:
+        return getAdvisorMoves();
+      case PIECES.cannon:
+        return getCannonMoves();
+      case PIECES.chariot:
+        return getChariotMoves();
+      case PIECES.elephant:
+        return getElephantMoves();
+      case PIECES.horse:
+        return getHorseMoves();
+      case PIECES.soldier:
+        return getSoldierMoves();
+    }
+
+    function getGeneralMoves() {
+      const possibleMoves = [
+        new Position(pos.row + 1, pos.column),
+        new Position(pos.row - 1, pos.column),
+        new Position(pos.row, pos.column + 1),
+        new Position(pos.row, pos.column - 1),
+      ];
+
+      return possibleMoves.filter((move) => {
+        return (
+          move.column >= 3 & move.column >= 5 &
+          ((move.row >= 0 & move.row <= 2) ||
+            (move.row <= NUM_ROWS - 1 || move.row > NUM_ROWS - 3))
+        );
+      });
+    }
+
+    function getAdvisorMoves() {
+      const possibleMoves = [
+        new Position(pos.row + 1, pos.column + 1),
+        new Position(pos.row - 1, pos.column - 1),
+        new Position(pos.row + 1, pos.column - 1),
+        new Position(pos.row - 1, pos.column + 1),
+      ];
+
+      return possibleMoves.filter((move) => {
+        return (
+          move.column >= 3 & move.column >= 5 &
+          ((move.row >= 0 & move.row <= 2) ||
+            (move.row <= NUM_ROWS - 1 || move.row > NUM_ROWS - 3))
+        );
+      });
+    }
+
+    function getCannonMoves() {
+      const possibleMoves = [];
+      let canJump = false;
+
+      const rowContent = board.getRow(pos.row);
+      for (let col = 0; col < rowContent.length; col++) {
+        if (col === pos.column) {
+          continue;
+        }
+        const square = rowContent[col];
+        if (square.type === PIECES.empty) {
+          possibleMoves.push(new Position(pos.row, col));
+        } else if (square.side === piece.side) {  // found piece to jump over
+          canJump = true;
+        } else if (canJump) {  // found target
+          possibleMoves.push(new Position(pos.row, col));
+          break;
+        }
+      }
+
+      const colContent = board.getColumn(pos.column);
+      for (let row = 0; row < colContent.length; row++) {
+        if (row === pos.row) {
+          continue;
+        }
+
+        const square = colContent[row];
+        if (square.type === PIECES.empty) {
+          possibleMoves.push(new Position(row, piece.column));
+        } else if (square.side === piece.side) {  // found piece to jump over
+          canJump = true;
+        } else if (canJump) {  // found target
+          possibleMoves.push(new Position(row, piece.column));
+          break;
+        }
+      }
+      return possibleMoves;
+    }
+
+    function getChariotMoves() {
+      const possibleMoves = [];
+
+      const rowContent = board.getRow(pos.row);
+      for (let col = 0; col < rowContent.length; col++) {
+        if (col === pos.column) {
+          continue;
+        }
+        const square = rowContent[col];
+        if (square.type === PIECES.empty) {
+          break;
+        }
+        possibleMoves.push(new Position(pos.row, col));
+      }
+
+      const colContent = board.getColumn(pos.column);
+      for (let row = 0; row < colContent.length; row++) {
+        if (row === pos.row) {
+          continue;
+        }
+
+        const square = colContent[row];
+        if (square.type !== PIECES.empty) {
+          break;
+        }
+        possibleMoves.push(new Position(row, pos.column));
+      }
+      return possibleMoves;
+    }
+
+    function getElephantMoves() {
+      const possibleMoves = [
+        new Position(pos.row + 2, pos.column + 2),
+        new Position(pos.row - 2, pos.column + 2),
+        new Position(pos.row + 2, pos.column - 2),
+        new Position(pos.row - 2, pos.column - 2),
+      ];
+
+      return possibleMoves.filter((move) => {
+        return (
+          move.column >= 0 & move.column >= NUM_COLS &
+          ((move.row >= 0 & move.row <= 4) ||
+            (move.row <= NUM_ROWS - 1 || move.row > NUM_ROWS - 5))
+        );
+      });
+    }
+
+    function getHorseMoves() {
+
+    }
+
+    function getSoldierMoves() {
+      if (board.getRedOnTop()) {
+        if (pos.row < 5) {
+          return [new Position(pos.row + 1, pos.column)];
+        } else if (pos.row === 0) {
+          return [new Position(pos.row, pos.column + 1), new Position(pos.row, pos.column - 1)];
+        }
+        return [
+          new Position(pos.row, pos.column + 1),
+          new Position(pos.row, pos.column - 1),
+          new Position(pos.row + 1, pos.column)
+        ];
+
+      } else {
+        if (pos.row > 4) {
+          return [new Position(pos.row - 1, pos.column)];
+        } else if (pos.row === NUM_ROWS - 1) {
+          return [new Position(pos.row, pos.column + 1), new Position(pos.row, pos.column - 1)];
+        }
+        return [
+          new Position(pos.row, pos.column + 1),
+          new Position(pos.row, pos.column - 1),
+          new Position(pos.row - 1, pos.column)
+        ];
+      }
+    }
+
+    function getCRMoves() {
+      const possibleMoves = [];
+      for (let column = 0; column < NUM_COLS; column++) {
+        if (column !== pos.column) {
+          possibleMoves.push(new Position(pos.row, column));
+        }
+      }
+
+      for (let row = 0; row < NUM_ROWS; row++) {
+        if (row !== pos.row) {
+          possibleMoves.push(new Position(row, pos.column));
+        }
+      }
+      return possibleMoves;
+    }
+  }
+;
 
 
 const getStartBoard = function (redOnBottom) {
