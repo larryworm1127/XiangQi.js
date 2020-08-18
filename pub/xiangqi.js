@@ -75,16 +75,6 @@ class Board {
     return JSON.parse(JSON.stringify(this.board));
   };
 
-  getRow = (row) => {
-    return this.board[row];
-  };
-
-  getColumn = (column) => {
-    return this.board.map((row) => {
-      return row[column];
-    });
-  };
-
   getSquare = (row, col) => {
     return this.board[row][col];
   };
@@ -301,7 +291,6 @@ XiangQi.prototype = {
     this.boardSquares.forEach((row, rowIndex) => {
       row.forEach((square, colIndex) => {
         square.onclick = (event) => {
-          console.log(event.target.tagName);
           if (event.target.tagName === 'IMG') {
             this._squareOnClickHandler(event, rowIndex, colIndex);
           }
@@ -603,39 +592,78 @@ const getValidMoves = function (row, col, board) {
 
   function getCannonMoves() {
     const possibleMoves = [];
-    let canJump = false;
+    const boardContent = board.getBoardContent();
 
-    const rowContent = board.getRow(pos.row);
-    for (let col = 0; col < rowContent.length; col++) {
-      if (col === pos.column) {
-        continue;
+    let canJump = false;
+    let rowBelow = pos.row + 1;
+    while (rowBelow < NUM_ROWS) {
+      const square = boardContent[rowBelow][pos.column];
+      if (square.type !== PIECES.empty) {
+        if (!canJump) {
+          canJump = true;
+        } else if (square.side !== piece.side && canJump) {
+          possibleMoves.push(new Position(rowBelow, pos.column));
+          break;
+        }
       }
-      const square = rowContent[col];
-      if (square.type === PIECES.empty) {
-        possibleMoves.push(new Position(pos.row, col));
-      } else if (square.side === piece.side) {  // found piece to jump over
-        canJump = true;
-      } else if (canJump) {  // found target
-        possibleMoves.push(new Position(pos.row, col));
-        break;
+      if (!canJump) {
+        possibleMoves.push(new Position(rowBelow, pos.column));
       }
+      rowBelow += 1;
     }
 
-    const colContent = board.getColumn(pos.column);
-    for (let row = 0; row < colContent.length; row++) {
-      if (row === pos.row) {
-        continue;
+    let rowAbove = pos.row - 1;
+    canJump = false;
+    while (rowAbove >= 0) {
+      const square = boardContent[rowAbove][pos.column];
+      if (square.type !== PIECES.empty) {
+        if (!canJump) {
+          canJump = true;
+        } else if (square.side !== piece.side && canJump) {
+          possibleMoves.push(new Position(rowAbove, pos.column));
+          break;
+        }
       }
+      if (!canJump) {
+        possibleMoves.push(new Position(rowAbove, pos.column));
+      }
+      rowAbove -= 1;
+    }
 
-      const square = colContent[row];
-      if (square.type === PIECES.empty) {
-        possibleMoves.push(new Position(row, piece.column));
-      } else if (square.side === piece.side) {  // found piece to jump over
-        canJump = true;
-      } else if (canJump) {  // found target
-        possibleMoves.push(new Position(row, piece.column));
-        break;
+    let colRight = pos.column + 1;
+    canJump = false;
+    while (colRight < NUM_COLS) {
+      const square = boardContent[pos.row][colRight];
+      if (square.type !== PIECES.empty) {
+        if (!canJump) {
+          canJump = true;
+        } else if (square.side !== piece.side && canJump) {
+          possibleMoves.push(new Position(pos.row, colRight));
+          break;
+        }
       }
+      if (!canJump) {
+        possibleMoves.push(new Position(pos.row, colRight));
+      }
+      colRight += 1;
+    }
+
+    let colLeft = pos.column - 1;
+    canJump = false;
+    while (colLeft >= 0) {
+      const square = boardContent[pos.row][colLeft];
+      if (square.type !== PIECES.empty) {
+        if (!canJump) {
+          canJump = true;
+        } else if (square.side !== piece.side && canJump) {
+          possibleMoves.push(new Position(pos.row, colLeft));
+          break;
+        }
+      }
+      if (!canJump) {
+        possibleMoves.push(new Position(pos.row, colLeft));
+      }
+      colLeft -= 1;
     }
     return possibleMoves;
   }
