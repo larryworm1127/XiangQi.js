@@ -166,6 +166,7 @@ function XiangQi(inputConfig) {
   this.boardWidth = this.config.boardSize;
   this.containerElement = this.config.container;
   this.draggable = this.config.draggable;
+  this.clickable = this.config.clickable;
 
   this.squareSize = (this.boardWidth - 2) / NUM_COLS;
   this.boardHeight = (this.boardWidth / NUM_COLS) * NUM_ROWS;
@@ -262,6 +263,17 @@ XiangQi.prototype = {
           firstChild.ondragstart = () => {
             return false;
           };
+        }
+      });
+    });
+  },
+
+  removeDraggable: function () {
+    this.boardSquares.forEach((row) => {
+      row.forEach(({ firstChild }) => {
+        if (firstChild) {
+          firstChild.removeAttribute('onmousedown', this._mouseDownDragHandler);
+          firstChild.removeAttribute('ondragstart');
         }
       });
     });
@@ -463,8 +475,10 @@ const _buildConfig = function (inputConfig) {
     draggable: ('draggable' in config) ? config['draggable'] : false,
     delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
     redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
+    clickable: ('clickable' in config) ? config['clickable'] : false
   };
 };
+
 
 // centers the ball at (pageX, pageY) coordinates
 const _moveAt = function (pageX, pageY, shiftX, shiftY, piece) {
