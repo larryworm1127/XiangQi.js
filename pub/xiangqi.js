@@ -29,9 +29,9 @@ const SIDES = {
 
 (function (global) {
 
-  // ======================================================================
+  // ----------------------------------------------------------------------
   // Constants functions
-  // ======================================================================
+  // ----------------------------------------------------------------------
   const CSS = {
     board: 'board',
     boardContainer: 'board-container',
@@ -54,9 +54,9 @@ const SIDES = {
   const RED_TOP_BOARD_CONTENT = parseFenString(RED_TOP_START_FEN);
   const RED_BOT_BOARD_CONTENT = parseFenString(RED_BOT_START_FEN);
 
-  // ======================================================================
+  // ----------------------------------------------------------------------
   // Objects functions
-  // ======================================================================
+  // ----------------------------------------------------------------------
   function Piece(type, side) {
     return { type, side };
   }
@@ -69,10 +69,9 @@ const SIDES = {
     return { oldPos, newPos };
   }
 
-  // ======================================================================
+  // ----------------------------------------------------------------------
   // A virtual XiangQi board
-  // Used to keep track of XiangQi pieces on the board.
-  // ======================================================================
+  // ----------------------------------------------------------------------
   class Board {
 
     constructor(config) {
@@ -190,6 +189,7 @@ const SIDES = {
     getSelectedSquare = () => {
       return this.selectedSquare;
     };
+    board;
 
     updateSelectedSquare = (row, col) => {
       this.selectedSquare.row = row;
@@ -573,9 +573,9 @@ const SIDES = {
     };
   }
 
-  // ======================================================================
+  // ----------------------------------------------------------------------
   // Main library function
-  // ======================================================================
+  // ----------------------------------------------------------------------
   function XiangQi(inputConfig) {
     this.config = _buildConfig(inputConfig);
     this.boardWidth = this.config.boardSize;
@@ -607,15 +607,15 @@ const SIDES = {
   }
 
   XiangQi.prototype = {
-    // ======================================================================
-    // Main features functions
-    // ======================================================================
+    // ----------------------------------------------------------------------
+    // Main features functions (public)
+    // ----------------------------------------------------------------------
     drawBoard: function () {
-      this._drawBoardDOM();
+      _drawBoardDOM(this);
     },
 
     removeBoard: function () {
-      this._removeBoardDOM();
+      _removeBoardDOM(this);
     },
 
     flipBoard: function () {
@@ -632,7 +632,7 @@ const SIDES = {
       this.boardWidth = newWidth;
       this.boardHeight = _getBoardHeight(newWidth);
       this.squareSize = _getSquareSize(newWidth);
-      this._resizeBoardDOM();
+      _resizeBoardDOM(this);
     },
 
     /**
@@ -657,7 +657,7 @@ const SIDES = {
       content.forEach((row, rowIndex) => {
         row.forEach((square, colIndex) => {
           if (square.type !== PIECES.empty) {
-            this._drawPieceDOM(rowIndex, colIndex, square.type, square.side);
+            _drawPieceDOM(this, rowIndex, colIndex, square.type, square.side);
           }
         });
       });
@@ -666,7 +666,7 @@ const SIDES = {
     clearBoard: function (clearVirtual = true) {
       this.boardSquares.forEach((row, rowIndex) => {
         row.forEach((_, colIndex) => {
-          this._removePieceDOM(rowIndex, colIndex);
+          _removePieceDOM(this, rowIndex, colIndex);
         });
       });
 
@@ -677,20 +677,20 @@ const SIDES = {
     },
 
     drawPiece: function (row, col, piece, side) {
-      this._drawPieceDOM(row, col, piece, side);
+      _drawPieceDOM(this, row, col, piece, side);
     },
 
     removePiece: function (row, col) {
-      this._removePieceDOM(row, col);
+      _removePieceDOM(this, row, col);
       this.board.removePiece(row, col);
     },
 
     drawSideBar: function () {
       if (!this.hasSideBar) {
-        this._drawSideBar();
+        _drawSideBar(this);
         this.hasSideBar = true;
       } else {
-        this._updateSideBar();
+        _updateSideBar(this);
       }
     },
 
@@ -701,7 +701,7 @@ const SIDES = {
       this.boardSquares.forEach((row, rowIndex) => {
         row.forEach(({ firstChild }, colIndex) => {
           if (firstChild) {
-            firstChild.onmousedown = (event) => this._mouseDownDragHandler(event, firstChild, rowIndex, colIndex);
+            firstChild.onmousedown = (event) => _mouseDownDragHandler(this, event, firstChild, rowIndex, colIndex);
             firstChild.ondragstart = () => false;
           }
         });
@@ -727,7 +727,7 @@ const SIDES = {
         row.forEach((square, colIndex) => {
           if (square.firstChild) {
             square.onclick = () => {
-              this._squareOnClickHandler(rowIndex, colIndex);
+              _squareOnClickHandler(this, rowIndex, colIndex);
             };
           }
         });
@@ -743,263 +743,263 @@ const SIDES = {
         });
       });
     },
-
-    // ======================================================================
-    // DOM manipulation functions
-    // ======================================================================
-    _drawBoardDOM: function () {
-      this.boardDiv = document.createElement('div');
-      this.boardDiv.className = CSS.board;
-      this.boardDiv.style.width = `${this.boardWidth}px`;
-      this.boardDiv.style.height = `${this.boardHeight}px`;
-
-      // Add square div
-      this.board.getBoardContent().forEach((row, rowIndex) => {
-        const rowDiv = document.createElement('div');
-        rowDiv.className = CSS.row;
-
-        row.forEach((_, colIndex) => {
-          const square = document.createElement('div');
-          square.className = CSS.square;
-          square.id = `${rowIndex}-${colIndex}`;
-          square.style.width = `${this.squareSize}px`;
-          square.style.height = `${this.squareSize}px`;
-          rowDiv.appendChild(square);
-          this.boardSquares[rowIndex].push(square);
-        });
-
-        const clear = document.createElement('div');
-        clear.className = CSS.clear;
-        rowDiv.appendChild(clear);
-        this.boardDiv.appendChild(rowDiv);
-      });
-
-      this.containerElement.appendChild(this.boardDiv);
-    },
-
-    _resizeBoardDOM: function () {
-      this.boardDiv.style.width = `${this.boardWidth}px`;
-      this.boardDiv.style.height = `${this.boardHeight}px`;
-
-      this.boardSquares.forEach((row) => {
-        row.forEach((square) => {
-          if (square.firstChild) {
-            square.firstChild.style.width = `${this.squareSize}px`;
-            square.firstChild.style.height = `${this.squareSize}px`;
-          }
-          square.style.width = `${this.squareSize}px`;
-          square.style.height = `${this.squareSize}px`;
-        });
-      });
-    },
-
-    _drawPieceDOM: function (row, col, piece, side) {
-      if (!this.boardSquares[row][col].firstChild) {
-        const pieceElement = document.createElement('img');
-        pieceElement.src = `${PIECE_PATH}${side}${piece}.svg`;
-        pieceElement.style.width = `${this.squareSize}px`;
-        pieceElement.style.height = `${this.squareSize}px`;
-
-        this.boardSquares[row][col].appendChild(pieceElement);
-      }
-    },
-
-    _drawSideBar: function () {
-      // Create sidebar container
-      const sideBar = document.createElement('div');
-      sideBar.className = CSS.sideBar;
-
-      const sideBarTitle = document.createElement('p');
-      sideBarTitle.textContent = 'Piece Counts';
-      sideBarTitle.className = CSS.sideBarTitle;
-      sideBar.appendChild(sideBarTitle);
-
-      // Get and display piece counts
-      const pieceCount = this.board.getPieceCounts();
-      Object.entries(pieceCount).forEach(([side, pieceTypes]) => {
-        const sideDiv = document.createElement('div');
-        sideDiv.className = CSS.sideBarSide;
-
-        Object.entries(pieceTypes).forEach(([pieceType, count]) => {
-          const pieceDiv = document.createElement('div');
-
-          const pieceElement = document.createElement('img');
-          pieceElement.src = `${PIECE_PATH}${side}${pieceType}.svg`;
-          pieceElement.style.width = `${this.squareSize}px`;
-          pieceElement.style.height = `${this.squareSize}px`;
-          pieceDiv.appendChild(pieceElement);
-
-          const countElement = document.createElement('span');
-          countElement.textContent = `${count}`;
-          pieceDiv.appendChild(countElement);
-
-          sideDiv.appendChild(pieceDiv);
-        });
-
-        sideBar.appendChild(sideDiv);
-      });
-
-      // Add sidebar div to main container
-      this.containerElement.appendChild(sideBar);
-    },
-
-    _updateSideBar: function () {
-      const pieceCount = this.board.getPieceCounts();
-
-      const sideDivs = document.getElementsByClassName(CSS.sideBarSide);
-      Object.values(pieceCount).forEach((pieceTypes, index) => {
-        const sideDiv = sideDivs.item(index).children;
-
-        Object.values(pieceTypes).forEach((count, index) => {
-          const pieceDiv = sideDiv.item(index).children.item(1);
-          pieceDiv.textContent = `${count}`;
-        });
-      });
-    },
-
-    _removePieceDOM: function (row, col) {
-      const square = this.boardSquares[row][col];
-      while (square.firstChild) {
-        square.removeChild(square.lastChild);
-      }
-    },
-
-    _removeBoardDOM: function () {
-      this.containerElement.removeChild(this.boardDiv);
-    },
-
-    _mouseDownDragHandler: function (event, piece, rowIndex, colIndex) {
-      let lastSquare = null;
-      let currentSquare = null;
-      const lastPosition = new Position(rowIndex, colIndex);
-      const board = this.board;
-
-      const shiftX = event.clientX - piece.getBoundingClientRect().left;
-      const shiftY = event.clientY - piece.getBoundingClientRect().top;
-
-      // (1) prepare to moving: make absolute and on top by z-index
-      piece.style.position = 'absolute';
-      piece.style.zIndex = '1000';
-
-      // move it out of any current parents directly into body
-      // to make it positioned relative to the body
-      document.body.append(piece);
-
-      // move our absolutely positioned ball under the pointer
-      _moveAt(event.pageX, event.pageY, shiftX, shiftY, piece);
-
-      function _mouseMoveDragHandler(event) {
-        _moveAt(event.pageX, event.pageY, shiftX, shiftY, piece);
-        piece.hidden = true;
-        const elemBelow = document.elementFromPoint(event.clientX, event.clientY);
-        piece.hidden = false;
-
-        // Don't do anything if there is nothing below dragged element
-        if (!elemBelow) {
-          return;
-        }
-
-        const squareBelow = elemBelow.closest('.square');
-        if (squareBelow && currentSquare !== squareBelow) {
-          // Update virtual board
-          const posStr = squareBelow.id.split('-');
-          const newMove = new Position(parseInt(posStr[0]), parseInt(posStr[1]));
-          board.move(new Move(lastPosition, newMove));
-          lastPosition.row = newMove.row;
-          lastPosition.column = newMove.column;
-
-          // Update square tracking
-          if (currentSquare) {
-            _leaveSquare(currentSquare);
-          }
-          lastSquare = currentSquare;
-          currentSquare = squareBelow;
-          if (currentSquare) {
-            _enterSquare(currentSquare);
-          }
-        }
-      }
-
-      // move the ball on mousemove
-      document.addEventListener('mousemove', _mouseMoveDragHandler);
-
-      piece.onmouseup = () => {
-        this._mouseUpDragHandler(piece, _mouseMoveDragHandler, currentSquare, lastSquare);
-      };
-    },
-
-    _mouseUpDragHandler: function (piece, _mouseMoveDragHandler, currentSquare, lastSquare) {
-      // Clear mousemove handlers
-      document.removeEventListener('mousemove', _mouseMoveDragHandler);
-      piece.onmouseup = null;
-
-      // Clear square highlight
-      _leaveSquare(currentSquare);
-      if (!currentSquare.firstChild) {
-        currentSquare.appendChild(piece);
-      } else {
-        lastSquare.appendChild(piece);
-      }
-      piece.style.position = 'static';
-      piece.style.zIndex = '0';
-    },
-
-    _squareOnClickHandler: function (row, col) {
-      // Remove previous highlight
-      const previousSquare = this.board.getSelectedSquare();
-      this.boardSquares[previousSquare.row][previousSquare.column].classList.remove(CSS.highlightSquare);
-      this.board.getPreviousHighlight().forEach(({ row, column }) => {
-        const square = this.boardSquares[row][column];
-        if (!square.firstChild) {
-          square.onclick = null;
-        }
-        square.classList.remove(CSS.highlightSquareMove);
-      });
-
-      // Add highlight to selected square
-      this.boardSquares[row][col].classList.add(CSS.highlightSquare);
-
-      // Show possible moves
-      const moves = this.board.getValidMoves(row, col);
-      this.board.setPreviousHighlight(moves);
-      this.board.updateSelectedSquare(row, col);
-      moves.forEach(({ row, column }) => {
-        this.boardSquares[row][column].classList.add(CSS.highlightSquareMove);
-        this.boardSquares[row][column].onclick = () => {
-          this._squareOnClickMoveHandler(row, column);
-        };
-      });
-    },
-
-    _squareOnClickMoveHandler: function (row, col) {
-      // Remove piece from old square
-      const currSquare = this.board.getSelectedSquare();
-      const pieceElem = this.boardSquares[currSquare.row][currSquare.column].firstChild;
-      this.boardSquares[currSquare.row][currSquare.column].removeChild(pieceElem);
-
-      // Update virtual board
-      this.board.move(Move(Position(currSquare.row, currSquare.column), Position(row, col)));
-
-      // Remove highlights
-      this.boardSquares[currSquare.row][currSquare.column].classList.remove(CSS.highlightSquare);
-      this.board.getPreviousHighlight().forEach(({ row, column }) => {
-        this.boardSquares[row][column].classList.remove(CSS.highlightSquareMove);
-        this.boardSquares[row][column].onclick = null;
-      });
-
-      // Move piece to clicked square
-      const targetSquare = this.boardSquares[row][col];
-      if (targetSquare.firstChild) {
-        targetSquare.removeChild(targetSquare.firstChild);
-      }
-      targetSquare.appendChild(pieceElem);
-      targetSquare.onclick = () => this._squareOnClickHandler(row, col);
-    }
   };
 
-  // ======================================================================
-  // Utility functions
-  // ======================================================================
+  // ----------------------------------------------------------------------
+  // DOM manipulation functions (private)
+  // ----------------------------------------------------------------------
+  function _drawBoardDOM(XiangQi) {
+    XiangQi.boardDiv = document.createElement('div');
+    XiangQi.boardDiv.className = CSS.board;
+    XiangQi.boardDiv.style.width = `${XiangQi.boardWidth}px`;
+    XiangQi.boardDiv.style.height = `${XiangQi.boardHeight}px`;
+
+    // Add square div
+    XiangQi.board.getBoardContent().forEach((row, rowIndex) => {
+      const rowDiv = document.createElement('div');
+      rowDiv.className = CSS.row;
+
+      row.forEach((_, colIndex) => {
+        const square = document.createElement('div');
+        square.className = CSS.square;
+        square.id = `${rowIndex}-${colIndex}`;
+        square.style.width = `${XiangQi.squareSize}px`;
+        square.style.height = `${XiangQi.squareSize}px`;
+        rowDiv.appendChild(square);
+        XiangQi.boardSquares[rowIndex].push(square);
+      });
+
+      const clear = document.createElement('div');
+      clear.className = CSS.clear;
+      rowDiv.appendChild(clear);
+      XiangQi.boardDiv.appendChild(rowDiv);
+    });
+
+    XiangQi.containerElement.appendChild(XiangQi.boardDiv);
+  }
+
+  function _resizeBoardDOM(XiangQi) {
+    XiangQi.boardDiv.style.width = `${XiangQi.boardWidth}px`;
+    XiangQi.boardDiv.style.height = `${XiangQi.boardHeight}px`;
+
+    XiangQi.boardSquares.forEach((row) => {
+      row.forEach((square) => {
+        if (square.firstChild) {
+          square.firstChild.style.width = `${XiangQi.squareSize}px`;
+          square.firstChild.style.height = `${XiangQi.squareSize}px`;
+        }
+        square.style.width = `${XiangQi.squareSize}px`;
+        square.style.height = `${XiangQi.squareSize}px`;
+      });
+    });
+  }
+
+  function _drawPieceDOM(XiangQi, row, col, piece, side) {
+    if (!XiangQi.boardSquares[row][col].firstChild) {
+      const pieceElement = document.createElement('img');
+      pieceElement.src = `${PIECE_PATH}${side}${piece}.svg`;
+      pieceElement.style.width = `${XiangQi.squareSize}px`;
+      pieceElement.style.height = `${XiangQi.squareSize}px`;
+
+      XiangQi.boardSquares[row][col].appendChild(pieceElement);
+    }
+  }
+
+  function _drawSideBar(XiangQi) {
+    // Create sidebar container
+    const sideBar = document.createElement('div');
+    sideBar.className = CSS.sideBar;
+
+    const sideBarTitle = document.createElement('p');
+    sideBarTitle.textContent = 'Piece Counts';
+    sideBarTitle.className = CSS.sideBarTitle;
+    sideBar.appendChild(sideBarTitle);
+
+    // Get and display piece counts
+    const pieceCount = XiangQi.board.getPieceCounts();
+    Object.entries(pieceCount).forEach(([side, pieceTypes]) => {
+      const sideDiv = document.createElement('div');
+      sideDiv.className = CSS.sideBarSide;
+
+      Object.entries(pieceTypes).forEach(([pieceType, count]) => {
+        const pieceDiv = document.createElement('div');
+
+        const pieceElement = document.createElement('img');
+        pieceElement.src = `${PIECE_PATH}${side}${pieceType}.svg`;
+        pieceElement.style.width = `${XiangQi.squareSize}px`;
+        pieceElement.style.height = `${XiangQi.squareSize}px`;
+        pieceDiv.appendChild(pieceElement);
+
+        const countElement = document.createElement('span');
+        countElement.textContent = `${count}`;
+        pieceDiv.appendChild(countElement);
+
+        sideDiv.appendChild(pieceDiv);
+      });
+
+      sideBar.appendChild(sideDiv);
+    });
+
+    // Add sidebar div to main container
+    XiangQi.containerElement.appendChild(sideBar);
+  }
+
+  function _updateSideBar(XiangQi) {
+    const pieceCount = XiangQi.board.getPieceCounts();
+
+    const sideDivs = document.getElementsByClassName(CSS.sideBarSide);
+    Object.values(pieceCount).forEach((pieceTypes, index) => {
+      const sideDiv = sideDivs.item(index).children;
+
+      Object.values(pieceTypes).forEach((count, index) => {
+        const pieceDiv = sideDiv.item(index).children.item(1);
+        pieceDiv.textContent = `${count}`;
+      });
+    });
+  }
+
+  function _removePieceDOM(XiangQi, row, col) {
+    const square = XiangQi.boardSquares[row][col];
+    while (square.firstChild) {
+      square.removeChild(square.lastChild);
+    }
+  }
+
+  function _removeBoardDOM(XiangQi) {
+    XiangQi.containerElement.removeChild(XiangQi.boardDiv);
+  }
+
+  function _mouseDownDragHandler(XiangQi, event, piece, rowIndex, colIndex) {
+    let lastSquare = null;
+    let currentSquare = null;
+    const lastPosition = new Position(rowIndex, colIndex);
+    const board = XiangQi.board;
+
+    const shiftX = event.clientX - piece.getBoundingClientRect().left;
+    const shiftY = event.clientY - piece.getBoundingClientRect().top;
+
+    // (1) prepare to moving: make absolute and on top by z-index
+    piece.style.position = 'absolute';
+    piece.style.zIndex = '1000';
+
+    // move it out of any current parents directly into body
+    // to make it positioned relative to the body
+    document.body.append(piece);
+
+    // move our absolutely positioned ball under the pointer
+    _moveAt(event.pageX, event.pageY, shiftX, shiftY, piece);
+
+    function _mouseMoveDragHandler(event) {
+      _moveAt(event.pageX, event.pageY, shiftX, shiftY, piece);
+      piece.hidden = true;
+      const elemBelow = document.elementFromPoint(event.clientX, event.clientY);
+      piece.hidden = false;
+
+      // Don't do anything if there is nothing below dragged element
+      if (!elemBelow) {
+        return;
+      }
+
+      const squareBelow = elemBelow.closest('.square');
+      if (squareBelow && currentSquare !== squareBelow) {
+        // Update virtual board
+        const posStr = squareBelow.id.split('-');
+        const newMove = new Position(parseInt(posStr[0]), parseInt(posStr[1]));
+        board.move(new Move(lastPosition, newMove));
+        lastPosition.row = newMove.row;
+        lastPosition.column = newMove.column;
+
+        // Update square tracking
+        if (currentSquare) {
+          _leaveSquare(currentSquare);
+        }
+        lastSquare = currentSquare;
+        currentSquare = squareBelow;
+        if (currentSquare) {
+          _enterSquare(currentSquare);
+        }
+      }
+    }
+
+    // move the ball on mousemove
+    document.addEventListener('mousemove', _mouseMoveDragHandler);
+
+    piece.onmouseup = () => {
+      _mouseUpDragHandler(piece, _mouseMoveDragHandler, currentSquare, lastSquare);
+    };
+  }
+
+  function _mouseUpDragHandler(piece, _mouseMoveDragHandler, currentSquare, lastSquare) {
+    // Clear mousemove handlers
+    document.removeEventListener('mousemove', _mouseMoveDragHandler);
+    piece.onmouseup = null;
+
+    // Clear square highlight
+    _leaveSquare(currentSquare);
+    if (currentSquare && !currentSquare.firstChild) {
+      currentSquare.appendChild(piece);
+    } else {
+      lastSquare.appendChild(piece);
+    }
+    piece.style.position = 'static';
+    piece.style.zIndex = '0';
+  }
+
+  function _squareOnClickHandler(XiangQi, row, col) {
+    // Remove previous highlight
+    const previousSquare = XiangQi.board.getSelectedSquare();
+    XiangQi.boardSquares[previousSquare.row][previousSquare.column].classList.remove(CSS.highlightSquare);
+    XiangQi.board.getPreviousHighlight().forEach(({ row, column }) => {
+      const square = XiangQi.boardSquares[row][column];
+      if (!square.firstChild) {
+        square.onclick = null;
+      }
+      square.classList.remove(CSS.highlightSquareMove);
+    });
+
+    // Add highlight to selected square
+    XiangQi.boardSquares[row][col].classList.add(CSS.highlightSquare);
+
+    // Show possible moves
+    const moves = XiangQi.board.getValidMoves(row, col);
+    XiangQi.board.setPreviousHighlight(moves);
+    XiangQi.board.updateSelectedSquare(row, col);
+    moves.forEach(({ row, column }) => {
+      XiangQi.boardSquares[row][column].classList.add(CSS.highlightSquareMove);
+      XiangQi.boardSquares[row][column].onclick = () => {
+        _squareOnClickMoveHandler(XiangQi, row, column);
+      };
+    });
+  }
+
+  function _squareOnClickMoveHandler(XiangQi, row, col) {
+    // Remove piece from old square
+    const currSquare = XiangQi.board.getSelectedSquare();
+    const pieceElem = XiangQi.boardSquares[currSquare.row][currSquare.column].firstChild;
+    XiangQi.boardSquares[currSquare.row][currSquare.column].removeChild(pieceElem);
+
+    // Update virtual board
+    XiangQi.board.move(Move(Position(currSquare.row, currSquare.column), Position(row, col)));
+
+    // Remove highlights
+    XiangQi.boardSquares[currSquare.row][currSquare.column].classList.remove(CSS.highlightSquare);
+    XiangQi.board.getPreviousHighlight().forEach(({ row, column }) => {
+      XiangQi.boardSquares[row][column].classList.remove(CSS.highlightSquareMove);
+      XiangQi.boardSquares[row][column].onclick = null;
+    });
+
+    // Move piece to clicked square
+    const targetSquare = XiangQi.boardSquares[row][col];
+    if (targetSquare.firstChild) {
+      targetSquare.removeChild(targetSquare.firstChild);
+    }
+    targetSquare.appendChild(pieceElem);
+    targetSquare.onclick = () => _squareOnClickHandler(XiangQi, row, col);
+  }
+
+  // ----------------------------------------------------------------------
+  // Utility functions (private)
+  // ----------------------------------------------------------------------
   function _buildConfig(inputConfig) {
     const config = (inputConfig === undefined) ? {} : inputConfig;
     return {
@@ -1048,8 +1048,10 @@ const SIDES = {
 
 
   /**
+   * Parses a XiangQi move string into a computer readable Move object.
    *
    * @param moveString {string} A move string in form of `[former rank][former file]-[new rank][new file]`
+   * @return {{oldPos: *, newPos: *}} The corresponding Move object.
    */
   function moveStringToObj(moveString) {
     const split = moveString.split('-');
@@ -1063,9 +1065,10 @@ const SIDES = {
 
 
   /**
+   * Parses a FEN string for a board state into a computer readable 2D-array of Piece objects.
    *
-   * @param fenString {String}
-   * @returns {Array[][]}
+   * @param fenString {String} the input FEN string.
+   * @returns {Array[][]} the parsed board content as a 2D-array of Piece objects.
    */
   function parseFenString(fenString) {
     const split = fenString.split('/');
@@ -1087,8 +1090,10 @@ const SIDES = {
 
 
   /**
+   * Takes an 2D-array of Piece objects and return its corresponding FEN string.
    *
-   * @param boardContent {Array[][]}
+   * @param boardContent {Array[][]} the board content to be converted.
+   * @return {string} the corresponding FEN string for input <boardContent>.
    */
   function getFenString(boardContent) {
     let result = '';
