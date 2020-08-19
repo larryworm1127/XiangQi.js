@@ -174,10 +174,10 @@ class Board {
 
     function getGeneralMoves(board) {
       const possibleMoves = [
-        new Position(pos.row + 1, pos.column),
-        new Position(pos.row - 1, pos.column),
-        new Position(pos.row, pos.column + 1),
-        new Position(pos.row, pos.column - 1),
+        Position(pos.row + 1, pos.column),
+        Position(pos.row - 1, pos.column),
+        Position(pos.row, pos.column + 1),
+        Position(pos.row, pos.column - 1),
       ];
 
       return possibleMoves.filter((move) => {
@@ -191,10 +191,10 @@ class Board {
 
     function getAdvisorMoves(board) {
       const possibleMoves = [
-        new Position(pos.row + 1, pos.column + 1),
-        new Position(pos.row - 1, pos.column - 1),
-        new Position(pos.row + 1, pos.column - 1),
-        new Position(pos.row - 1, pos.column + 1),
+        Position(pos.row + 1, pos.column + 1),
+        Position(pos.row - 1, pos.column - 1),
+        Position(pos.row + 1, pos.column - 1),
+        Position(pos.row - 1, pos.column + 1),
       ];
 
       return possibleMoves.filter((move) => {
@@ -218,12 +218,12 @@ class Board {
           if (!canJump) {
             canJump = true;
           } else if (square.side !== piece.side && canJump) {
-            possibleMoves.push(new Position(rowBelow, pos.column));
+            possibleMoves.push(Position(rowBelow, pos.column));
             break;
           }
         }
         if (!canJump) {
-          possibleMoves.push(new Position(rowBelow, pos.column));
+          possibleMoves.push(Position(rowBelow, pos.column));
         }
         rowBelow += 1;
       }
@@ -236,12 +236,12 @@ class Board {
           if (!canJump) {
             canJump = true;
           } else if (square.side !== piece.side && canJump) {
-            possibleMoves.push(new Position(rowAbove, pos.column));
+            possibleMoves.push(Position(rowAbove, pos.column));
             break;
           }
         }
         if (!canJump) {
-          possibleMoves.push(new Position(rowAbove, pos.column));
+          possibleMoves.push(Position(rowAbove, pos.column));
         }
         rowAbove -= 1;
       }
@@ -254,12 +254,12 @@ class Board {
           if (!canJump) {
             canJump = true;
           } else if (square.side !== piece.side && canJump) {
-            possibleMoves.push(new Position(pos.row, colRight));
+            possibleMoves.push(Position(pos.row, colRight));
             break;
           }
         }
         if (!canJump) {
-          possibleMoves.push(new Position(pos.row, colRight));
+          possibleMoves.push(Position(pos.row, colRight));
         }
         colRight += 1;
       }
@@ -272,12 +272,12 @@ class Board {
           if (!canJump) {
             canJump = true;
           } else if (square.side !== piece.side && canJump) {
-            possibleMoves.push(new Position(pos.row, colLeft));
+            possibleMoves.push(Position(pos.row, colLeft));
             break;
           }
         }
         if (!canJump) {
-          possibleMoves.push(new Position(pos.row, colLeft));
+          possibleMoves.push(Position(pos.row, colLeft));
         }
         colLeft -= 1;
       }
@@ -293,7 +293,7 @@ class Board {
         if (boardContent[rowBelow][pos.column].type !== PIECES.empty) {
           break;
         }
-        possibleMoves.push(new Position(rowBelow, pos.column));
+        possibleMoves.push(Position(rowBelow, pos.column));
         rowBelow += 1;
       }
 
@@ -302,7 +302,7 @@ class Board {
         if (boardContent[rowAbove][pos.column].type !== PIECES.empty) {
           break;
         }
-        possibleMoves.push(new Position(rowAbove, pos.column));
+        possibleMoves.push(Position(rowAbove, pos.column));
         rowAbove -= 1;
       }
 
@@ -311,7 +311,7 @@ class Board {
         if (boardContent[pos.row][colRight].type !== PIECES.empty) {
           break;
         }
-        possibleMoves.push(new Position(pos.row, colRight));
+        possibleMoves.push(Position(pos.row, colRight));
         colRight += 1;
       }
 
@@ -320,7 +320,7 @@ class Board {
         if (boardContent[pos.row][colLeft].type !== PIECES.empty) {
           break;
         }
-        possibleMoves.push(new Position(pos.row, colLeft));
+        possibleMoves.push(Position(pos.row, colLeft));
         colLeft -= 1;
       }
       return possibleMoves;
@@ -328,10 +328,10 @@ class Board {
 
     function getElephantMoves(board) {
       const possibleMoves = [
-        new Position(pos.row + 2, pos.column + 2),
-        new Position(pos.row - 2, pos.column + 2),
-        new Position(pos.row + 2, pos.column - 2),
-        new Position(pos.row - 2, pos.column - 2),
+        Position(pos.row + 2, pos.column + 2),
+        Position(pos.row - 2, pos.column + 2),
+        Position(pos.row + 2, pos.column - 2),
+        Position(pos.row - 2, pos.column - 2),
       ];
 
       return possibleMoves.filter((move) => {
@@ -347,45 +347,44 @@ class Board {
       const possibleMoves = [];
       if (pos.row + 1 < NUM_ROWS - 1 && board.getSquare(pos.row + 1, pos.column).type === PIECES.empty) {
         possibleMoves.push(
-          new Position(pos.row + 2, pos.column + 1),
-          new Position(pos.row + 2, pos.column - 1)
+          Position(pos.row + 2, pos.column + 1),
+          Position(pos.row + 2, pos.column - 1)
         );
       }
 
       if (pos.row - 1 > 0 && board.getSquare(pos.row - 1, pos.column).type === PIECES.empty) {
         possibleMoves.push(
-          new Position(pos.row - 2, pos.column + 1),
-          new Position(pos.row - 2, pos.column - 1)
+          Position(pos.row - 2, pos.column + 1),
+          Position(pos.row - 2, pos.column - 1)
         );
       }
 
       if (pos.column + 1 < NUM_COLS - 1 && board.getSquare(pos.row, pos.column + 1).type === PIECES.empty) {
         possibleMoves.push(
-          new Position(pos.row + 1, pos.column + 2),
-          new Position(pos.row - 1, pos.column + 2)
+          Position(pos.row + 1, pos.column + 2),
+          Position(pos.row - 1, pos.column + 2)
         );
       }
 
       if (pos.column - 1 > 0 && board.getSquare(pos.row, pos.column - 1).type === PIECES.empty) {
         possibleMoves.push(
-          new Position(pos.row + 1, pos.column - 2),
-          new Position(pos.row - 1, pos.column - 2)
+          Position(pos.row + 1, pos.column - 2),
+          Position(pos.row - 1, pos.column - 2)
         );
       }
       return possibleMoves;
     }
 
     function getSoldierMoves(board) {
-      console.log(board.getRedOnTop());
       const onTop = (board.getRedOnTop() && piece.side === SIDES.red) || (!board.getRedOnTop() && piece.side !== SIDES.red);
       if (onTop) {
         if (pos.row < 5) {
-          return [new Position(pos.row + 1, pos.column)];
+          return [Position(pos.row + 1, pos.column)];
         }
         return [
-          new Position(pos.row, pos.column + 1),
-          new Position(pos.row, pos.column - 1),
-          new Position(pos.row + 1, pos.column)
+          Position(pos.row, pos.column + 1),
+          Position(pos.row, pos.column - 1),
+          Position(pos.row + 1, pos.column)
         ].filter((position) => {
           return (
             position.row >= 0 &&
@@ -396,12 +395,12 @@ class Board {
         });
       } else {
         if (pos.row > 4) {
-          return [new Position(pos.row - 1, pos.column)];
+          return [Position(pos.row - 1, pos.column)];
         }
         return [
-          new Position(pos.row, pos.column + 1),
-          new Position(pos.row, pos.column - 1),
-          new Position(pos.row - 1, pos.column)
+          Position(pos.row, pos.column + 1),
+          Position(pos.row, pos.column - 1),
+          Position(pos.row - 1, pos.column)
         ].filter((position) => {
           return (
             position.row >= 0 &&
