@@ -838,7 +838,6 @@ XiangQi.prototype = {
 
     // Show possible moves
     const moves = this.board.getValidMoves(row, col);
-    console.log(moves);
     this.board.setPreviousHighlight(moves);
     this.board.updateSelectedSquare(row, col);
     moves.forEach(({ row, column }) => {
@@ -872,7 +871,6 @@ XiangQi.prototype = {
     }
     targetSquare.appendChild(pieceElem);
     targetSquare.onclick = () => this._squareOnClickHandler(row, col);
-    console.log(this.board.getBoardContent());
   }
 };
 
