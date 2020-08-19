@@ -51,12 +51,13 @@ const SIDES = {
 class Board {
 
   constructor(config) {
-    if (config.boardContent.length > 0) {
-      this.board = config.boardContent.map((row) => {
-        return row.slice();
-      });
-    } else if (config.startPos) {
+    if (config.boardContent === 'start') {
       this.setStartPosition(config.redOnBottom);
+    } else if (typeof config.boardContent === 'string') {
+      const parsedFen = parseFenString(config.boardContent);
+      this.setBoardContent(parsedFen);
+    } else if (Array.isArray(config.boardContent) && config.boardContent.length > 0) {
+      this.setBoardContent(config.boardContent);
     } else {
       this.board = new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(Piece(PIECES.empty)));
     }
@@ -122,7 +123,11 @@ class Board {
   };
 
   setStartPosition = (redOnBottom) => {
-    this.board = getStartBoard(redOnBottom).map((row) => {
+    this.setBoardContent(getStartBoard(redOnBottom));
+  };
+
+  setBoardContent = (boardContent) => {
+    this.board = boardContent.map((row) => {
       return row.slice();
     });
   };
@@ -559,9 +564,10 @@ function XiangQi(inputConfig) {
   this.config = _buildConfig(inputConfig);
   this.boardWidth = this.config.boardSize;
   this.containerElement = this.config.container;
+  this.boardDiv = null;
 
-  this.squareSize = (this.boardWidth - 2) / NUM_COLS;
-  this.boardHeight = (this.boardWidth / NUM_COLS) * NUM_ROWS;
+  this.squareSize = _getSquareSize(this.boardWidth);
+  this.boardHeight = _getBoardHeight(this.boardWidth);
   this.boardSquares = [[], [], [], [], [], [], [], [], [], []];
   this.board = new Board(this.config);
   this.hasSideBar = this.config.showSideBar;
@@ -590,6 +596,17 @@ XiangQi.prototype = {
   // ======================================================================
   drawBoard: function () {
     this._drawBoardDOM();
+  },
+
+  removeBoard: function () {
+    this._removeBoardDOM();
+  },
+
+  resizeBoard: function (newWidth) {
+    this.boardWidth = newWidth;
+    this.boardHeight = _getBoardHeight(newWidth);
+    this.squareSize = _getSquareSize(newWidth);
+    this._resizeBoardDOM();
   },
 
   /**
@@ -706,10 +723,10 @@ XiangQi.prototype = {
   // DOM manipulation functions
   // ======================================================================
   _drawBoardDOM: function () {
-    const board = document.createElement('div');
-    board.className = CSS.board;
-    board.style.width = `${this.boardWidth}px`;
-    board.style.height = `${this.boardHeight}px`;
+    this.boardDiv = document.createElement('div');
+    this.boardDiv.className = CSS.board;
+    this.boardDiv.style.width = `${this.boardWidth}px`;
+    this.boardDiv.style.height = `${this.boardHeight}px`;
 
     // Add square div
     this.board.getBoardContent().forEach((row, rowIndex) => {
@@ -729,10 +746,22 @@ XiangQi.prototype = {
       const clear = document.createElement('div');
       clear.className = CSS.clear;
       rowDiv.appendChild(clear);
-      board.appendChild(rowDiv);
+      this.boardDiv.appendChild(rowDiv);
     });
 
-    this.containerElement.appendChild(board);
+    this.containerElement.appendChild(this.boardDiv);
+  },
+
+  _resizeBoardDOM: function () {
+    this.boardDiv.style.width = `${this.boardWidth}px`;
+    this.boardDiv.style.height = `${this.boardHeight}px`;
+
+    this.boardSquares.forEach((row) => {
+      row.forEach((square) => {
+        square.style.width = `${this.squareSize}px`;
+        square.style.height = `${this.squareSize}px`;
+      });
+    });
   },
 
   _drawPieceDOM: function (row, col, piece, side) {
@@ -804,6 +833,10 @@ XiangQi.prototype = {
     while (square.firstChild) {
       square.removeChild(square.lastChild);
     }
+  },
+
+  _removeBoardDOM: function () {
+    this.containerElement.removeChild(this.boardDiv);
   },
 
   _mouseDownDragHandler: function (event, piece, rowIndex, colIndex) {
@@ -945,7 +978,6 @@ const _buildConfig = function (inputConfig) {
     boardSize: ('boardSize' in config) ? config['boardSize'] : 400,
     container: ('containerId' in config) ? document.getElementById(config['containerId']) : document.body,
     boardContent: ('boardContent' in config) ? config['boardContent'] : [],
-    startPos: ('startPos' in config) ? config['startPos'] : false,
     showSideBar: ('showSideBar' in config) ? config['showSideBar'] : false,
     draggable: ('draggable' in config) ? config['draggable'] : false,
     delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
@@ -953,6 +985,16 @@ const _buildConfig = function (inputConfig) {
     clickable: ('clickable' in config) ? config['clickable'] : false,
     voidPieces: ('voidPieces' in config) ? config['voidPieces'] : false
   };
+};
+
+
+const _getBoardHeight = function (boardWidth) {
+  return (boardWidth / NUM_COLS) * NUM_ROWS;
+};
+
+
+const _getSquareSize = function (boardWidth) {
+  return (boardWidth - 2) / NUM_COLS;
 };
 
 
@@ -977,55 +1019,53 @@ const _leaveSquare = function (elem) {
 };
 
 
-const moveStringToMove = function (moveString, board) {
-  const split = moveString.split('');
-  const pieceType = ABBREVIATION[split[0]]
-
-  const moveType = split[2];
+/**
+ *
+ * @param moveString {string} A move string in form of `[former rank][former file]-[new rank][new file]`
+ */
+const moveStringToMove = function (moveString) {
+  const split = moveString.split('-');
+  const formerPos = split[0].split('');
+  const newPos = split[1].split('');
+  return Move(
+    Position(parseInt(formerPos[0]), parseInt(formerPos[1])),
+    Position(parseInt(newPos[0]), parseInt(newPos[1]))
+  );
 };
 
 
+/**
+ *
+ * @param fenString {String}
+ * @returns {Array[][]}
+ */
+const parseFenString = function (fenString) {
+  const split = fenString.split('/');
+
+  return split.map((row) => {
+    const rowSplit = row.split('');
+    return rowSplit.flatMap((char) => {
+      if (!isNaN(parseInt(char))) {
+        return new Array(parseInt(char)).fill(Piece(PIECES.empty));
+      }
+
+      if (char === char.toUpperCase()) {
+        return Piece(ABBREVIATION[char], SIDES.red);
+      }
+      return Piece(ABBREVIATION[char.toUpperCase()], SIDES.black);
+    });
+  });
+};
+
+
+/**
+ *
+ * @param redOnBottom {boolean}
+ * @returns {Array[][]}
+ */
 const getStartBoard = function (redOnBottom) {
-  const topSide = (redOnBottom) ? SIDES.black : SIDES.red;
-  const bottomSide = (topSide === SIDES.red) ? SIDES.black : SIDES.red;
-  return [
-    [
-      Piece(PIECES.chariot, topSide),
-      Piece(PIECES.horse, topSide),
-      Piece(PIECES.elephant, topSide),
-      Piece(PIECES.advisor, topSide),
-      Piece(PIECES.general, topSide),
-      Piece(PIECES.advisor, topSide),
-      Piece(PIECES.elephant, topSide),
-      Piece(PIECES.horse, topSide),
-      Piece(PIECES.chariot, topSide),
-    ],
-    new Array(NUM_COLS).fill(Piece(PIECES.empty)),
-    new Array(NUM_COLS).fill(Piece(PIECES.empty)).map((item, index) => {
-      return (index === 1 || index === 7) ? Piece(PIECES.cannon, topSide) : item;
-    }),
-    new Array(NUM_COLS).fill(Piece(PIECES.empty)).map((item, index) => {
-      return (index % 2 === 0) ? Piece(PIECES.soldier, topSide) : item;
-    }),
-    new Array(NUM_COLS).fill(Piece(PIECES.empty)),
-    new Array(NUM_COLS).fill(Piece(PIECES.empty)),
-    new Array(NUM_COLS).fill(Piece(PIECES.empty)).map((item, index) => {
-      return (index % 2 === 0) ? Piece(PIECES.soldier, bottomSide) : item;
-    }),
-    new Array(NUM_COLS).fill(Piece(PIECES.empty)).map((item, index) => {
-      return (index === 1 || index === 7) ? Piece(PIECES.cannon, bottomSide) : item;
-    }),
-    new Array(NUM_COLS).fill(Piece(PIECES.empty)),
-    [
-      Piece(PIECES.chariot, bottomSide),
-      Piece(PIECES.horse, bottomSide),
-      Piece(PIECES.elephant, bottomSide),
-      Piece(PIECES.advisor, bottomSide),
-      Piece(PIECES.general, bottomSide),
-      Piece(PIECES.advisor, bottomSide),
-      Piece(PIECES.elephant, bottomSide),
-      Piece(PIECES.horse, bottomSide),
-      Piece(PIECES.chariot, bottomSide),
-    ],
-  ];
+  const fenString = (redOnBottom) ?
+    'rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR' :
+    'RHEAGAEHR/9/1C5C1/S1S1S1S1S/9/9/s1s1s1s1s/1c5c1/9/rheagaehr';
+  return parseFenString(fenString);
 };
