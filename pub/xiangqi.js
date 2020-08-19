@@ -559,7 +559,7 @@ XiangQi.prototype = {
       row.forEach((square, colIndex) => {
         square.onclick = (event) => {
           if (event.target.tagName === 'IMG') {
-            this._squareOnClickHandler(event, rowIndex, colIndex);
+            this._squareOnClickHandler(rowIndex, colIndex);
           }
         };
       });
@@ -746,12 +746,13 @@ XiangQi.prototype = {
     piece.style.zIndex = '0';
   },
 
-  _squareOnClickHandler: function (event, row, col) {
+  _squareOnClickHandler: function (row, col) {
     // Remove previous highlight
     const previousSquare = this.board.getSelectedSquare();
     this.boardSquares[previousSquare.row][previousSquare.column].classList.remove(CSS.highlightSquare);
     this.board.getPreviousHighlight().forEach(({ row, column }) => {
       this.boardSquares[row][column].classList.remove(CSS.highlightSquareMove);
+      this.boardSquares[row][column].onclick = null;
     });
 
     // Add highlight to selected square
@@ -760,13 +761,39 @@ XiangQi.prototype = {
     // Show possible moves
     const moves = this.board.getValidMoves(row, col);
     console.log(moves);
+    this.board.setPreviousHighlight(moves);
+    this.board.updateSelectedSquare(row, col);
     moves.forEach(({ row, column }) => {
       this.boardSquares[row][column].classList.add(CSS.highlightSquareMove);
+      this.boardSquares[row][column].onclick = () => {
+        this._squareOnClickMoveHandler(row, column);
+      };
     });
-    this.board.setPreviousHighlight(moves);
+  },
 
+  _squareOnClickMoveHandler: function (row, col) {
+    // Remove piece from old square
+    const currSquare = this.board.getSelectedSquare();
+    const pieceElem = this.boardSquares[currSquare.row][currSquare.column].firstChild;
+    this.boardSquares[currSquare.row][currSquare.column].removeChild(pieceElem);
 
-    this.board.updateSelectedSquare(row, col);
+    // Update virtual board
+    this.board.move(Move(Position(currSquare.row, currSquare.column), Position(row, col)));
+
+    // Remove highlights
+    this.boardSquares[currSquare.row][currSquare.column].classList.remove(CSS.highlightSquare);
+    this.board.getPreviousHighlight().forEach(({ row, column }) => {
+      this.boardSquares[row][column].classList.remove(CSS.highlightSquareMove);
+      this.boardSquares[row][column].onclick = null;
+    });
+
+    // Move piece to clicked square
+    const targetSquare = this.boardSquares[row][col];
+    if (targetSquare.firstChild) {
+      targetSquare.removeChild(targetSquare.firstChild);
+    }
+    targetSquare.appendChild(pieceElem);
+    targetSquare.onclick = () => this._squareOnClickHandler(row, col);
   }
 };
 
