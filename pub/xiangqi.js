@@ -30,6 +30,15 @@ const PIECES = {
   soldier: 'Soldier',
   empty: 'Empty'
 };
+const ABBREVIATION = {
+  A: PIECES.advisor,
+  C: PIECES.cannon,
+  R: PIECES.chariot,
+  E: PIECES.elephant,
+  G: PIECES.general,
+  H: PIECES.horse,
+  S: PIECES.soldier
+};
 const SIDES = {
   red: 'r',
   black: 'b'
@@ -583,7 +592,13 @@ XiangQi.prototype = {
     this._drawBoardDOM();
   },
 
-  movePiece: function (move) {
+  /**
+   *
+   *
+   * @param moveString {string} Standard XiangQi move notation.
+   */
+  movePiece: function (moveString) {
+    const move = moveStringToMove(moveString, this.board);
     if (this.board.move(move)) {
       this.clearBoard(false);
       this.drawBoardContent();
@@ -959,6 +974,14 @@ const _leaveSquare = function (elem) {
   if (elem) {
     elem.classList.remove(CSS.highlightSquare);
   }
+};
+
+
+const moveStringToMove = function (moveString, board) {
+  const split = moveString.split('');
+  const pieceType = ABBREVIATION[split[0]]
+
+  const moveType = split[2];
 };
 
 
