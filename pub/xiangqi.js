@@ -1,6 +1,32 @@
 'use strict';
 
 
+// Enums
+const PIECES = {
+  general: 'General',
+  advisor: 'Advisor',
+  elephant: 'Elephant',
+  cannon: 'Cannon',
+  chariot: 'Chariot',
+  horse: 'Horse',
+  soldier: 'Soldier',
+  empty: 'Empty'
+};
+const ABBREVIATION = {
+  A: PIECES.advisor,
+  C: PIECES.cannon,
+  R: PIECES.chariot,
+  E: PIECES.elephant,
+  G: PIECES.general,
+  H: PIECES.horse,
+  S: PIECES.soldier
+};
+const SIDES = {
+  red: 'r',
+  black: 'b'
+};
+
+
 (function (global) {
 
   // ======================================================================
@@ -27,31 +53,6 @@
   const RED_BOT_START_FEN = 'rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR';
   const RED_TOP_BOARD_CONTENT = parseFenString(RED_TOP_START_FEN);
   const RED_BOT_BOARD_CONTENT = parseFenString(RED_BOT_START_FEN);
-
-  // Enums
-  const PIECES = {
-    general: 'General',
-    advisor: 'Advisor',
-    elephant: 'Elephant',
-    cannon: 'Cannon',
-    chariot: 'Chariot',
-    horse: 'Horse',
-    soldier: 'Soldier',
-    empty: 'Empty'
-  };
-  const ABBREVIATION = {
-    A: PIECES.advisor,
-    C: PIECES.cannon,
-    R: PIECES.chariot,
-    E: PIECES.elephant,
-    G: PIECES.general,
-    H: PIECES.horse,
-    S: PIECES.soldier
-  };
-  const SIDES = {
-    red: 'r',
-    black: 'b'
-  };
 
   // ======================================================================
   // Objects functions
@@ -1084,15 +1085,41 @@
     });
   }
 
+
+  /**
+   *
+   * @param boardContent {Array[][]}
+   */
+  function getFenString(boardContent) {
+    let result = '';
+
+    boardContent.forEach((row) => {
+      let numEmpty = 0;
+      row.forEach(({ type, side }) => {
+        if (type === PIECES.empty) {
+          numEmpty += 1;
+        } else {
+          if (numEmpty !== 0) {
+            result += numEmpty;
+            numEmpty = 0;
+          }
+          const piece = Object.keys(ABBREVIATION).find(key => ABBREVIATION[key] === type);
+          result += (side === SIDES.red) ? piece.toUpperCase() : piece.toLowerCase();
+        }
+      });
+
+      if (numEmpty !== 0) {
+        result += numEmpty;
+        numEmpty = 0;
+      }
+      result += '/';
+    });
+    return result;
+  }
+
   global.XiangQi = global.XiangQi || XiangQi;
+  global.parseFenString = global.parseFenString || parseFenString;
+  global.getFenString = global.getFenString || getFenString;
 
 })(window);
-
-
-
-
-
-
-
-
 
