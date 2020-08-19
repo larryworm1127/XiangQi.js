@@ -10,7 +10,8 @@ const CSS = {
   sideBar: 'side-bar',
   sideBarSide: 'side-bar-side',
   sideBarTitle: 'side-bar-title',
-  highlightSquare: 'highlight-square'
+  highlightSquare: 'highlight-square',
+  highlightSquareMove: 'highlight-square-move'
 };
 const PIECE_PATH = 'assets/pieces/';
 
@@ -52,7 +53,7 @@ class Board {
     }
 
     this.selectedSquare = { row: 0, column: 0 };
-    this.previousMoves = [];
+    this.previousHighlight = [];
   }
 
   /**
@@ -143,8 +144,274 @@ class Board {
     this.selectedSquare.column = col;
   };
 
-  getPreviousMove = () => {
-    return [...this.previousMoves];
+  setPreviousHighlight = (highlights) => {
+    this.previousHighlight = [...highlights];
+  };
+
+  getPreviousHighlight = () => {
+    return [...this.previousHighlight];
+  };
+
+  getValidMoves = (row, col) => {
+    const piece = this.getSquare(row, col);
+    const pos = new Position(row, col);
+    switch (piece.type) {
+      case PIECES.general:
+        return getGeneralMoves(this);
+      case PIECES.advisor:
+        return getAdvisorMoves(this);
+      case PIECES.cannon:
+        return getCannonMoves(this);
+      case PIECES.chariot:
+        return getChariotMoves(this);
+      case PIECES.elephant:
+        return getElephantMoves(this);
+      case PIECES.horse:
+        return getHorseMoves(this);
+      case PIECES.soldier:
+        return getSoldierMoves(this);
+    }
+
+    function getGeneralMoves(board) {
+      const possibleMoves = [
+        new Position(pos.row + 1, pos.column),
+        new Position(pos.row - 1, pos.column),
+        new Position(pos.row, pos.column + 1),
+        new Position(pos.row, pos.column - 1),
+      ];
+
+      return possibleMoves.filter((move) => {
+        return (
+          move.column >= 3 & move.column <= 5 &&
+          ((move.row >= 0 & move.row <= 2) || (move.row < NUM_ROWS && move.row > NUM_ROWS - 4)) &&
+          board.getBoardContent()[move.row][move.column].side !== piece.side
+        );
+      });
+    }
+
+    function getAdvisorMoves(board) {
+      const possibleMoves = [
+        new Position(pos.row + 1, pos.column + 1),
+        new Position(pos.row - 1, pos.column - 1),
+        new Position(pos.row + 1, pos.column - 1),
+        new Position(pos.row - 1, pos.column + 1),
+      ];
+
+      return possibleMoves.filter((move) => {
+        return (
+          move.column >= 3 & move.column <= 5 &&
+          ((move.row >= 0 & move.row <= 2) || (move.row < NUM_ROWS & move.row > NUM_ROWS - 4)) &&
+          board.getBoardContent()[move.row][move.column].side !== piece.side
+        );
+      });
+    }
+
+    function getCannonMoves(board) {
+      const possibleMoves = [];
+      const boardContent = board.getBoardContent();
+
+      let canJump = false;
+      let rowBelow = pos.row + 1;
+      while (rowBelow < NUM_ROWS) {
+        const square = boardContent[rowBelow][pos.column];
+        if (square.type !== PIECES.empty) {
+          if (!canJump) {
+            canJump = true;
+          } else if (square.side !== piece.side && canJump) {
+            possibleMoves.push(new Position(rowBelow, pos.column));
+            break;
+          }
+        }
+        if (!canJump) {
+          possibleMoves.push(new Position(rowBelow, pos.column));
+        }
+        rowBelow += 1;
+      }
+
+      let rowAbove = pos.row - 1;
+      canJump = false;
+      while (rowAbove >= 0) {
+        const square = boardContent[rowAbove][pos.column];
+        if (square.type !== PIECES.empty) {
+          if (!canJump) {
+            canJump = true;
+          } else if (square.side !== piece.side && canJump) {
+            possibleMoves.push(new Position(rowAbove, pos.column));
+            break;
+          }
+        }
+        if (!canJump) {
+          possibleMoves.push(new Position(rowAbove, pos.column));
+        }
+        rowAbove -= 1;
+      }
+
+      let colRight = pos.column + 1;
+      canJump = false;
+      while (colRight < NUM_COLS) {
+        const square = boardContent[pos.row][colRight];
+        if (square.type !== PIECES.empty) {
+          if (!canJump) {
+            canJump = true;
+          } else if (square.side !== piece.side && canJump) {
+            possibleMoves.push(new Position(pos.row, colRight));
+            break;
+          }
+        }
+        if (!canJump) {
+          possibleMoves.push(new Position(pos.row, colRight));
+        }
+        colRight += 1;
+      }
+
+      let colLeft = pos.column - 1;
+      canJump = false;
+      while (colLeft >= 0) {
+        const square = boardContent[pos.row][colLeft];
+        if (square.type !== PIECES.empty) {
+          if (!canJump) {
+            canJump = true;
+          } else if (square.side !== piece.side && canJump) {
+            possibleMoves.push(new Position(pos.row, colLeft));
+            break;
+          }
+        }
+        if (!canJump) {
+          possibleMoves.push(new Position(pos.row, colLeft));
+        }
+        colLeft -= 1;
+      }
+      return possibleMoves;
+    }
+
+    function getChariotMoves(board) {
+      const possibleMoves = [];
+      const boardContent = board.getBoardContent();
+
+      let rowBelow = pos.row + 1;
+      while (rowBelow < NUM_ROWS) {
+        if (boardContent[rowBelow][pos.column].type !== PIECES.empty) {
+          break;
+        }
+        possibleMoves.push(new Position(rowBelow, pos.column));
+        rowBelow += 1;
+      }
+
+      let rowAbove = pos.row - 1;
+      while (rowAbove >= 0) {
+        if (boardContent[rowAbove][pos.column].type !== PIECES.empty) {
+          break;
+        }
+        possibleMoves.push(new Position(rowAbove, pos.column));
+        rowAbove -= 1;
+      }
+
+      let colRight = pos.column + 1;
+      while (colRight < NUM_COLS) {
+        if (boardContent[pos.row][colRight].type !== PIECES.empty) {
+          break;
+        }
+        possibleMoves.push(new Position(pos.row, colRight));
+        colRight += 1;
+      }
+
+      let colLeft = pos.column - 1;
+      while (colLeft >= 0) {
+        if (boardContent[pos.row][colLeft].type !== PIECES.empty) {
+          break;
+        }
+        possibleMoves.push(new Position(pos.row, colLeft));
+        colLeft -= 1;
+      }
+      return possibleMoves;
+    }
+
+    function getElephantMoves(board) {
+      const possibleMoves = [
+        new Position(pos.row + 2, pos.column + 2),
+        new Position(pos.row - 2, pos.column + 2),
+        new Position(pos.row + 2, pos.column - 2),
+        new Position(pos.row - 2, pos.column - 2),
+      ];
+
+      return possibleMoves.filter((move) => {
+        return (
+          move.column >= 0 & move.column < NUM_COLS &
+          ((move.row >= 0 & move.row <= 4) || (move.row < NUM_ROWS & move.row > NUM_ROWS - 6)) &&
+          board.getBoardContent()[move.row][move.column].side !== piece.side
+        );
+      });
+    }
+
+    function getHorseMoves(board) {
+      const possibleMoves = [];
+      if (pos.row + 1 < NUM_ROWS - 1 && board.getSquare(pos.row + 1, pos.column).type === PIECES.empty) {
+        possibleMoves.push(
+          new Position(pos.row + 2, pos.column + 1),
+          new Position(pos.row + 2, pos.column - 1)
+        );
+      }
+
+      if (pos.row - 1 > 0 && board.getSquare(pos.row - 1, pos.column).type === PIECES.empty) {
+        possibleMoves.push(
+          new Position(pos.row - 2, pos.column + 1),
+          new Position(pos.row - 2, pos.column - 1)
+        );
+      }
+
+      if (pos.column + 1 < NUM_COLS - 1 && board.getSquare(pos.row, pos.column + 1).type === PIECES.empty) {
+        possibleMoves.push(
+          new Position(pos.row + 1, pos.column + 2),
+          new Position(pos.row - 1, pos.column + 2)
+        );
+      }
+
+      if (pos.column - 1 > 0 && board.getSquare(pos.row, pos.column - 1).type === PIECES.empty) {
+        possibleMoves.push(
+          new Position(pos.row + 1, pos.column - 2),
+          new Position(pos.row - 1, pos.column - 2)
+        );
+      }
+      return possibleMoves;
+    }
+
+    function getSoldierMoves(board) {
+      console.log(board.getRedOnTop());
+      const onTop = (board.getRedOnTop() && piece.side === SIDES.red) || (!board.getRedOnTop() && piece.side !== SIDES.red);
+      if (onTop) {
+        if (pos.row < 5) {
+          return [new Position(pos.row + 1, pos.column)];
+        }
+        return [
+          new Position(pos.row, pos.column + 1),
+          new Position(pos.row, pos.column - 1),
+          new Position(pos.row + 1, pos.column)
+        ].filter((position) => {
+          return (
+            position.row >= 0 &&
+            position.row < NUM_ROWS &&
+            position.column >= 0 &&
+            position.column < NUM_COLS
+          );
+        });
+      } else {
+        if (pos.row > 4) {
+          return [new Position(pos.row - 1, pos.column)];
+        }
+        return [
+          new Position(pos.row, pos.column + 1),
+          new Position(pos.row, pos.column - 1),
+          new Position(pos.row - 1, pos.column)
+        ].filter((position) => {
+          return (
+            position.row >= 0 &&
+            position.row < NUM_ROWS &&
+            position.column >= 0 &&
+            position.column < NUM_COLS
+          );
+        });
+      }
+    }
   };
 }
 
@@ -483,13 +750,21 @@ XiangQi.prototype = {
     // Remove previous highlight
     const previousSquare = this.board.getSelectedSquare();
     this.boardSquares[previousSquare.row][previousSquare.column].classList.remove(CSS.highlightSquare);
+    this.board.getPreviousHighlight().forEach(({ row, column }) => {
+      this.boardSquares[row][column].classList.remove(CSS.highlightSquareMove);
+    });
 
     // Add highlight to selected square
     this.boardSquares[row][col].classList.add(CSS.highlightSquare);
 
     // Show possible moves
-    const moves = getValidMoves(row, col, this.board);
+    const moves = this.board.getValidMoves(row, col);
     console.log(moves);
+    moves.forEach(({ row, column }) => {
+      this.boardSquares[row][column].classList.add(CSS.highlightSquareMove);
+    });
+    this.board.setPreviousHighlight(moves);
+
 
     this.board.updateSelectedSquare(row, col);
   }
@@ -532,269 +807,6 @@ const _enterSquare = function (elem) {
 const _leaveSquare = function (elem) {
   if (elem) {
     elem.classList.remove(CSS.highlightSquare);
-  }
-};
-
-
-const getValidMoves = function (row, col, board) {
-  const piece = board.getSquare(row, col);
-  const pos = new Position(row, col);
-  switch (piece.type) {
-    case PIECES.general:
-      return getGeneralMoves();
-    case PIECES.advisor:
-      return getAdvisorMoves();
-    case PIECES.cannon:
-      return getCannonMoves();
-    case PIECES.chariot:
-      return getChariotMoves();
-    case PIECES.elephant:
-      return getElephantMoves();
-    case PIECES.horse:
-      return getHorseMoves();
-    case PIECES.soldier:
-      return getSoldierMoves();
-  }
-
-  function getGeneralMoves() {
-    const possibleMoves = [
-      new Position(pos.row + 1, pos.column),
-      new Position(pos.row - 1, pos.column),
-      new Position(pos.row, pos.column + 1),
-      new Position(pos.row, pos.column - 1),
-    ];
-
-    return possibleMoves.filter((move) => {
-      return (
-        move.column >= 3 & move.column >= 5 &
-        ((move.row >= 0 & move.row <= 2) ||
-          (move.row <= NUM_ROWS - 1 || move.row > NUM_ROWS - 3))
-      );
-    });
-  }
-
-  function getAdvisorMoves() {
-    const possibleMoves = [
-      new Position(pos.row + 1, pos.column + 1),
-      new Position(pos.row - 1, pos.column - 1),
-      new Position(pos.row + 1, pos.column - 1),
-      new Position(pos.row - 1, pos.column + 1),
-    ];
-
-    return possibleMoves.filter((move) => {
-      return (
-        move.column >= 3 & move.column <= 5 &
-        ((move.row >= 0 & move.row <= 2) ||
-          (move.row <= NUM_ROWS - 1 & move.row > NUM_ROWS - 3))
-      );
-    });
-  }
-
-  function getCannonMoves() {
-    const possibleMoves = [];
-    const boardContent = board.getBoardContent();
-
-    let canJump = false;
-    let rowBelow = pos.row + 1;
-    while (rowBelow < NUM_ROWS) {
-      const square = boardContent[rowBelow][pos.column];
-      if (square.type !== PIECES.empty) {
-        if (!canJump) {
-          canJump = true;
-        } else if (square.side !== piece.side && canJump) {
-          possibleMoves.push(new Position(rowBelow, pos.column));
-          break;
-        }
-      }
-      if (!canJump) {
-        possibleMoves.push(new Position(rowBelow, pos.column));
-      }
-      rowBelow += 1;
-    }
-
-    let rowAbove = pos.row - 1;
-    canJump = false;
-    while (rowAbove >= 0) {
-      const square = boardContent[rowAbove][pos.column];
-      if (square.type !== PIECES.empty) {
-        if (!canJump) {
-          canJump = true;
-        } else if (square.side !== piece.side && canJump) {
-          possibleMoves.push(new Position(rowAbove, pos.column));
-          break;
-        }
-      }
-      if (!canJump) {
-        possibleMoves.push(new Position(rowAbove, pos.column));
-      }
-      rowAbove -= 1;
-    }
-
-    let colRight = pos.column + 1;
-    canJump = false;
-    while (colRight < NUM_COLS) {
-      const square = boardContent[pos.row][colRight];
-      if (square.type !== PIECES.empty) {
-        if (!canJump) {
-          canJump = true;
-        } else if (square.side !== piece.side && canJump) {
-          possibleMoves.push(new Position(pos.row, colRight));
-          break;
-        }
-      }
-      if (!canJump) {
-        possibleMoves.push(new Position(pos.row, colRight));
-      }
-      colRight += 1;
-    }
-
-    let colLeft = pos.column - 1;
-    canJump = false;
-    while (colLeft >= 0) {
-      const square = boardContent[pos.row][colLeft];
-      if (square.type !== PIECES.empty) {
-        if (!canJump) {
-          canJump = true;
-        } else if (square.side !== piece.side && canJump) {
-          possibleMoves.push(new Position(pos.row, colLeft));
-          break;
-        }
-      }
-      if (!canJump) {
-        possibleMoves.push(new Position(pos.row, colLeft));
-      }
-      colLeft -= 1;
-    }
-    return possibleMoves;
-  }
-
-  function getChariotMoves() {
-    const possibleMoves = [];
-    const boardContent = board.getBoardContent();
-
-    let rowBelow = pos.row + 1;
-    while (rowBelow < NUM_ROWS) {
-      if (boardContent[rowBelow][pos.column].type !== PIECES.empty) {
-        break;
-      }
-      possibleMoves.push(new Position(rowBelow, pos.column));
-      rowBelow += 1;
-    }
-
-    let rowAbove = pos.row - 1;
-    while (rowAbove >= 0) {
-      if (boardContent[rowAbove][pos.column].type !== PIECES.empty) {
-        break;
-      }
-      possibleMoves.push(new Position(rowAbove, pos.column));
-      rowAbove -= 1;
-    }
-
-    let colRight = pos.column + 1;
-    while (colRight < NUM_COLS) {
-      if (boardContent[pos.row][colRight].type !== PIECES.empty) {
-        break;
-      }
-      possibleMoves.push(new Position(pos.row, colRight));
-      colRight += 1;
-    }
-
-    let colLeft = pos.column - 1;
-    while (colLeft >= 0) {
-      if (boardContent[pos.row][colLeft].type !== PIECES.empty) {
-        break;
-      }
-      possibleMoves.push(new Position(pos.row, colLeft));
-      colLeft -= 1;
-    }
-    return possibleMoves;
-  }
-
-  function getElephantMoves() {
-    const possibleMoves = [
-      new Position(pos.row + 2, pos.column + 2),
-      new Position(pos.row - 2, pos.column + 2),
-      new Position(pos.row + 2, pos.column - 2),
-      new Position(pos.row - 2, pos.column - 2),
-    ];
-
-    return possibleMoves.filter((move) => {
-      return (
-        move.column >= 0 & move.column <= NUM_COLS &
-        ((move.row >= 0 & move.row <= 4) ||
-          (move.row <= NUM_ROWS - 1 & move.row > NUM_ROWS - 5))
-      );
-    });
-  }
-
-  function getHorseMoves() {
-    const possibleMoves = [];
-    if (pos.row + 1 < NUM_ROWS - 1 && board.getSquare(pos.row + 1, pos.column).type === PIECES.empty) {
-      possibleMoves.push([
-        new Position(pos.row + 2, pos.column + 1),
-        new Position(pos.row + 2, pos.column - 1)
-      ]);
-    }
-
-    if (pos.row - 1 > 0 && board.getSquare(pos.row - 1, pos.column).type === PIECES.empty) {
-      possibleMoves.push([
-        new Position(pos.row - 2, pos.column + 1),
-        new Position(pos.row - 2, pos.column - 1)
-      ]);
-    }
-
-    if (pos.column + 1 < NUM_COLS - 1 && board.getSquare(pos.row, pos.column + 1).type === PIECES.empty) {
-      possibleMoves.push([
-        new Position(pos.row + 1, pos.column + 2),
-        new Position(pos.row - 1, pos.column + 2)
-      ]);
-    }
-
-    if (pos.column - 1 > 0 && board.getSquare(pos.row, pos.column - 1).type === PIECES.empty) {
-      possibleMoves.push([
-        new Position(pos.row + 1, pos.column - 2),
-        new Position(pos.row - 1, pos.column - 2)
-      ]);
-    }
-    return possibleMoves;
-  }
-
-  function getSoldierMoves() {
-    console.log(board.getRedOnTop());
-    const onTop = (board.getRedOnTop() && piece.side === SIDES.red) || (!board.getRedOnTop() && piece.side !== SIDES.red);
-    if (onTop) {
-      if (pos.row < 5) {
-        return [new Position(pos.row + 1, pos.column)];
-      }
-      return [
-        new Position(pos.row, pos.column + 1),
-        new Position(pos.row, pos.column - 1),
-        new Position(pos.row + 1, pos.column)
-      ].filter((position) => {
-        return (
-          position.row >= 0 &&
-          position.row < NUM_ROWS &&
-          position.column >= 0 &&
-          position.column < NUM_COLS
-        );
-      });
-    } else {
-      if (pos.row > 4) {
-        return [new Position(pos.row - 1, pos.column)];
-      }
-      return [
-        new Position(pos.row, pos.column + 1),
-        new Position(pos.row, pos.column - 1),
-        new Position(pos.row - 1, pos.column)
-      ].filter((position) => {
-        return (
-          position.row >= 0 &&
-          position.row < NUM_ROWS &&
-          position.column >= 0 &&
-          position.column < NUM_COLS
-        );
-      });
-    }
   }
 };
 
