@@ -1,6 +1,6 @@
 .board {
     box-sizing: content-box;
-    background: url("assets/boards/chessBoard.svg");
+    background: url("assets/boards/board.svg");
     padding: 5px;
     border: 3px solid black;
     display: inline-block;

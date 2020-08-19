@@ -52,6 +52,7 @@ class Board {
       this.board = new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(Piece(PIECES.empty)));
     }
 
+    this.voidPieces = config.voidPieces;
     this.selectedSquare = { row: 0, column: 0 };
     this.previousHighlight = [];
   }
@@ -64,6 +65,10 @@ class Board {
   move = (moveObj) => {
     const square = this.board[moveObj.oldPos.row][moveObj.oldPos.column];
     if (square.type === PIECES.empty) {
+      return false;
+    }
+
+    if (!this.voidPieces && this.board[moveObj.newPos.row][moveObj.newPos.column].type !== PIECES.empty) {
       return false;
     }
 
@@ -184,7 +189,8 @@ class Board {
         return (
           move.column >= 3 & move.column <= 5 &&
           ((move.row >= 0 & move.row <= 2) || (move.row < NUM_ROWS && move.row > NUM_ROWS - 4)) &&
-          board.getBoardContent()[move.row][move.column].side !== piece.side
+          ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
+            board.getBoardContent()[move.row][move.column].type === PIECES.empty)
         );
       });
     }
@@ -201,7 +207,8 @@ class Board {
         return (
           move.column >= 3 & move.column <= 5 &&
           ((move.row >= 0 & move.row <= 2) || (move.row < NUM_ROWS & move.row > NUM_ROWS - 4)) &&
-          board.getBoardContent()[move.row][move.column].side !== piece.side
+          ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
+            board.getBoardContent()[move.row][move.column].type === PIECES.empty)
         );
       });
     }
@@ -215,6 +222,9 @@ class Board {
       while (rowBelow < NUM_ROWS) {
         const square = boardContent[rowBelow][pos.column];
         if (square.type !== PIECES.empty) {
+          if (!board.voidPieces) {
+            break;
+          }
           if (!canJump) {
             canJump = true;
           } else if (square.side !== piece.side && canJump) {
@@ -233,6 +243,9 @@ class Board {
       while (rowAbove >= 0) {
         const square = boardContent[rowAbove][pos.column];
         if (square.type !== PIECES.empty) {
+          if (!board.voidPieces) {
+            break;
+          }
           if (!canJump) {
             canJump = true;
           } else if (square.side !== piece.side && canJump) {
@@ -251,6 +264,9 @@ class Board {
       while (colRight < NUM_COLS) {
         const square = boardContent[pos.row][colRight];
         if (square.type !== PIECES.empty) {
+          if (!board.voidPieces) {
+            break;
+          }
           if (!canJump) {
             canJump = true;
           } else if (square.side !== piece.side && canJump) {
@@ -269,6 +285,9 @@ class Board {
       while (colLeft >= 0) {
         const square = boardContent[pos.row][colLeft];
         if (square.type !== PIECES.empty) {
+          if (!board.voidPieces) {
+            break;
+          }
           if (!canJump) {
             canJump = true;
           } else if (square.side !== piece.side && canJump) {
@@ -291,7 +310,10 @@ class Board {
       let rowBelow = pos.row + 1;
       while (rowBelow < NUM_ROWS) {
         if (boardContent[rowBelow][pos.column].type !== PIECES.empty) {
-          if (boardContent[rowBelow][pos.column].side !== piece.side) {
+          if ((board.voidPieces) ?
+            boardContent[rowBelow][pos.column].side !== piece.side :
+            boardContent[rowBelow][pos.column].type === PIECES.empty
+          ) {
             possibleMoves.push(Position(rowBelow, pos.column));
           }
           break;
@@ -303,7 +325,10 @@ class Board {
       let rowAbove = pos.row - 1;
       while (rowAbove >= 0) {
         if (boardContent[rowAbove][pos.column].type !== PIECES.empty) {
-          if (boardContent[rowAbove][pos.column].side !== piece.side) {
+          if ((board.voidPieces) ?
+            boardContent[rowAbove][pos.column].side !== piece.side :
+            boardContent[rowAbove][pos.column].type === PIECES.empty
+          ) {
             possibleMoves.push(Position(rowAbove, pos.column));
           }
           break;
@@ -315,7 +340,10 @@ class Board {
       let colRight = pos.column + 1;
       while (colRight < NUM_COLS) {
         if (boardContent[pos.row][colRight].type !== PIECES.empty) {
-          if (boardContent[pos.row][colRight].side !== piece.side) {
+          if ((board.voidPieces) ?
+            boardContent[pos.row][colRight].side !== piece.side :
+            boardContent[pos.row][colRight].type === PIECES.empty
+          ) {
             possibleMoves.push(Position(pos.row, colRight));
           }
           break;
@@ -327,7 +355,10 @@ class Board {
       let colLeft = pos.column - 1;
       while (colLeft >= 0) {
         if (boardContent[pos.row][colLeft].type !== PIECES.empty) {
-          if (boardContent[pos.row][colLeft].side !== piece.side) {
+          if ((board.voidPieces) ?
+            boardContent[pos.row][colLeft].side !== piece.side :
+            boardContent[pos.row][colLeft].type === PIECES.empty
+          ) {
             possibleMoves.push(Position(pos.row, colLeft));
           }
           break;
@@ -383,13 +414,15 @@ class Board {
           move.column < NUM_COLS &&
           move.row >= 0 &&
           move.row <= 4 &&
-          board.getBoardContent()[move.row][move.column].side !== piece.side
+          ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
+            board.getBoardContent()[move.row][move.column].type === PIECES.empty)
         ) : (
           move.column >= 0 &&
           move.column < NUM_COLS &&
           move.row < NUM_ROWS &&
           move.row > NUM_ROWS - 6 &&
-          board.getBoardContent()[move.row][move.column].side !== piece.side
+          ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
+            board.getBoardContent()[move.row][move.column].type === PIECES.empty)
         );
       });
     }
@@ -441,7 +474,8 @@ class Board {
           move.column < NUM_COLS &&
           move.row >= 0 &&
           move.row < NUM_ROWS &&
-          board.getBoardContent()[move.row][move.column].side !== piece.side
+          ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
+            board.getBoardContent()[move.row][move.column].type === PIECES.empty)
         );
       });
     }
@@ -465,7 +499,8 @@ class Board {
             move.row < NUM_ROWS &&
             move.column >= 0 &&
             move.column < NUM_COLS &&
-            board.getBoardContent()[move.row][move.column].side !== piece.side
+            ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
+              board.getBoardContent()[move.row][move.column].type === PIECES.empty)
           );
         });
       } else {
@@ -482,7 +517,8 @@ class Board {
             move.row < NUM_ROWS &&
             move.column >= 0 &&
             move.column < NUM_COLS &&
-            board.getBoardContent()[move.row][move.column].side !== piece.side
+            ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
+              board.getBoardContent()[move.row][move.column].type === PIECES.empty)
           );
         });
       }
@@ -514,8 +550,6 @@ function XiangQi(inputConfig) {
   this.config = _buildConfig(inputConfig);
   this.boardWidth = this.config.boardSize;
   this.containerElement = this.config.container;
-  this.draggable = this.config.draggable;
-  this.clickable = this.config.clickable;
 
   this.squareSize = (this.boardWidth - 2) / NUM_COLS;
   this.boardHeight = (this.boardWidth / NUM_COLS) * NUM_ROWS;
@@ -531,12 +565,12 @@ function XiangQi(inputConfig) {
 
   // Draw side bar if enabled in config
   if (this.config.showSideBar) {
-    this._drawSideBar();
+    this.drawSideBar();
   }
 
-  if (this.draggable) {
+  if (this.config.draggable) {
     this.makeDraggable();
-  } else if (this.clickable) {
+  } else if (this.config.clickable) {
     this.makeClickable();
   }
 }
@@ -604,6 +638,8 @@ XiangQi.prototype = {
   },
 
   makeDraggable: function () {
+    this.removeClickable();
+
     // Add drag handlers for each square
     this.boardSquares.forEach((row, rowIndex) => {
       row.forEach(({ firstChild }, colIndex) => {
@@ -636,6 +672,16 @@ XiangQi.prototype = {
           square.onclick = () => {
             this._squareOnClickHandler(rowIndex, colIndex);
           };
+        }
+      });
+    });
+  },
+
+  removeClickable: function () {
+    this.boardSquares.forEach((row) => {
+      row.forEach((square) => {
+        if (square.firstChild) {
+          square.onclick = null;
         }
       });
     });
@@ -889,7 +935,8 @@ const _buildConfig = function (inputConfig) {
     draggable: ('draggable' in config) ? config['draggable'] : false,
     delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
     redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
-    clickable: ('clickable' in config) ? config['clickable'] : false
+    clickable: ('clickable' in config) ? config['clickable'] : false,
+    voidPieces: ('voidPieces' in config) ? config['voidPieces'] : false
   };
 };
 
