@@ -291,6 +291,9 @@ class Board {
       let rowBelow = pos.row + 1;
       while (rowBelow < NUM_ROWS) {
         if (boardContent[rowBelow][pos.column].type !== PIECES.empty) {
+          if (boardContent[rowBelow][pos.column].side !== piece.side) {
+            possibleMoves.push(Position(rowBelow, pos.column));
+          }
           break;
         }
         possibleMoves.push(Position(rowBelow, pos.column));
@@ -300,6 +303,9 @@ class Board {
       let rowAbove = pos.row - 1;
       while (rowAbove >= 0) {
         if (boardContent[rowAbove][pos.column].type !== PIECES.empty) {
+          if (boardContent[rowAbove][pos.column].side !== piece.side) {
+            possibleMoves.push(Position(rowAbove, pos.column));
+          }
           break;
         }
         possibleMoves.push(Position(rowAbove, pos.column));
@@ -309,6 +315,9 @@ class Board {
       let colRight = pos.column + 1;
       while (colRight < NUM_COLS) {
         if (boardContent[pos.row][colRight].type !== PIECES.empty) {
+          if (boardContent[pos.row][colRight].side !== piece.side) {
+            possibleMoves.push(Position(pos.row, colRight));
+          }
           break;
         }
         possibleMoves.push(Position(pos.row, colRight));
@@ -318,6 +327,9 @@ class Board {
       let colLeft = pos.column - 1;
       while (colLeft >= 0) {
         if (boardContent[pos.row][colLeft].type !== PIECES.empty) {
+          if (boardContent[pos.row][colLeft].side !== piece.side) {
+            possibleMoves.push(Position(pos.row, colLeft));
+          }
           break;
         }
         possibleMoves.push(Position(pos.row, colLeft));
@@ -327,17 +339,56 @@ class Board {
     }
 
     function getElephantMoves(board) {
-      const possibleMoves = [
-        Position(pos.row + 2, pos.column + 2),
-        Position(pos.row - 2, pos.column + 2),
-        Position(pos.row + 2, pos.column - 2),
-        Position(pos.row - 2, pos.column - 2),
-      ];
+      const possibleMoves = [];
+
+      if (
+        pos.row + 1 < NUM_ROWS - 1 &&
+        pos.column + 1 < NUM_COLS - 1 &&
+        board.getSquare(pos.row + 1, pos.column + 1).type === PIECES.empty
+      ) {
+        possibleMoves.push(Position(pos.row + 2, pos.column + 2));
+      }
+
+      if (
+        pos.row + 1 < NUM_ROWS - 1 &&
+        pos.column - 1 > 0 &&
+        board.getSquare(pos.row + 1, pos.column - 1).type === PIECES.empty
+      ) {
+        possibleMoves.push(Position(pos.row + 2, pos.column - 2));
+      }
+
+      if (
+        pos.row - 1 > 0 &&
+        pos.column + 1 < NUM_COLS - 1 &&
+        board.getSquare(pos.row - 1, pos.column + 1).type === PIECES.empty
+      ) {
+        possibleMoves.push(Position(pos.row - 2, pos.column + 2));
+      }
+
+      if (
+        pos.row - 1 > 0 &&
+        pos.column - 1 > 0 &&
+        board.getSquare(pos.row - 1, pos.column - 1).type === PIECES.empty
+      ) {
+        possibleMoves.push(Position(pos.row - 2, pos.column - 2));
+      }
 
       return possibleMoves.filter((move) => {
-        return (
-          move.column >= 0 & move.column < NUM_COLS &
-          ((move.row >= 0 & move.row <= 4) || (move.row < NUM_ROWS & move.row > NUM_ROWS - 6)) &&
+        const onTop = (
+          (board.getRedOnTop() && piece.side === SIDES.red) ||
+          (!board.getRedOnTop() && piece.side !== SIDES.red)
+        );
+        return onTop ? (
+          move.column >= 0 &&
+          move.column < NUM_COLS &&
+          move.row >= 0 &&
+          move.row <= 4 &&
+          board.getBoardContent()[move.row][move.column].side !== piece.side
+        ) : (
+          move.column >= 0 &&
+          move.column < NUM_COLS &&
+          move.row < NUM_ROWS &&
+          move.row > NUM_ROWS - 6 &&
           board.getBoardContent()[move.row][move.column].side !== piece.side
         );
       });
@@ -345,38 +396,61 @@ class Board {
 
     function getHorseMoves(board) {
       const possibleMoves = [];
-      if (pos.row + 1 < NUM_ROWS - 1 && board.getSquare(pos.row + 1, pos.column).type === PIECES.empty) {
+      if (
+        pos.row + 1 < NUM_ROWS - 1 &&
+        board.getSquare(pos.row + 1, pos.column).type === PIECES.empty
+      ) {
         possibleMoves.push(
           Position(pos.row + 2, pos.column + 1),
           Position(pos.row + 2, pos.column - 1)
         );
       }
 
-      if (pos.row - 1 > 0 && board.getSquare(pos.row - 1, pos.column).type === PIECES.empty) {
+      if (
+        pos.row - 1 > 0 &&
+        board.getSquare(pos.row - 1, pos.column).type === PIECES.empty
+      ) {
         possibleMoves.push(
           Position(pos.row - 2, pos.column + 1),
           Position(pos.row - 2, pos.column - 1)
         );
       }
 
-      if (pos.column + 1 < NUM_COLS - 1 && board.getSquare(pos.row, pos.column + 1).type === PIECES.empty) {
+      if (
+        pos.column + 1 < NUM_COLS - 1 &&
+        board.getSquare(pos.row, pos.column + 1).type === PIECES.empty
+      ) {
         possibleMoves.push(
           Position(pos.row + 1, pos.column + 2),
           Position(pos.row - 1, pos.column + 2)
         );
       }
 
-      if (pos.column - 1 > 0 && board.getSquare(pos.row, pos.column - 1).type === PIECES.empty) {
+      if (
+        pos.column - 1 > 0 &&
+        board.getSquare(pos.row, pos.column - 1).type === PIECES.empty
+      ) {
         possibleMoves.push(
           Position(pos.row + 1, pos.column - 2),
           Position(pos.row - 1, pos.column - 2)
         );
       }
-      return possibleMoves;
+      return possibleMoves.filter((move) => {
+        return (
+          move.column >= 0 &&
+          move.column < NUM_COLS &&
+          move.row >= 0 &&
+          move.row < NUM_ROWS &&
+          board.getBoardContent()[move.row][move.column].side !== piece.side
+        );
+      });
     }
 
     function getSoldierMoves(board) {
-      const onTop = (board.getRedOnTop() && piece.side === SIDES.red) || (!board.getRedOnTop() && piece.side !== SIDES.red);
+      const onTop = (
+        (board.getRedOnTop() && piece.side === SIDES.red) ||
+        (!board.getRedOnTop() && piece.side !== SIDES.red)
+      );
       if (onTop) {
         if (pos.row < 5) {
           return [Position(pos.row + 1, pos.column)];
@@ -385,12 +459,13 @@ class Board {
           Position(pos.row, pos.column + 1),
           Position(pos.row, pos.column - 1),
           Position(pos.row + 1, pos.column)
-        ].filter((position) => {
+        ].filter((move) => {
           return (
-            position.row >= 0 &&
-            position.row < NUM_ROWS &&
-            position.column >= 0 &&
-            position.column < NUM_COLS
+            move.row >= 0 &&
+            move.row < NUM_ROWS &&
+            move.column >= 0 &&
+            move.column < NUM_COLS &&
+            board.getBoardContent()[move.row][move.column].side !== piece.side
           );
         });
       } else {
@@ -401,12 +476,13 @@ class Board {
           Position(pos.row, pos.column + 1),
           Position(pos.row, pos.column - 1),
           Position(pos.row - 1, pos.column)
-        ].filter((position) => {
+        ].filter((move) => {
           return (
-            position.row >= 0 &&
-            position.row < NUM_ROWS &&
-            position.column >= 0 &&
-            position.column < NUM_COLS
+            move.row >= 0 &&
+            move.row < NUM_ROWS &&
+            move.column >= 0 &&
+            move.column < NUM_COLS &&
+            board.getBoardContent()[move.row][move.column].side !== piece.side
           );
         });
       }
@@ -556,11 +632,11 @@ XiangQi.prototype = {
     // Add onclick handler for each square
     this.boardSquares.forEach((row, rowIndex) => {
       row.forEach((square, colIndex) => {
-        square.onclick = (event) => {
-          if (event.target.tagName === 'IMG') {
+        if (square.firstChild) {
+          square.onclick = () => {
             this._squareOnClickHandler(rowIndex, colIndex);
-          }
-        };
+          };
+        }
       });
     });
   },
@@ -750,8 +826,11 @@ XiangQi.prototype = {
     const previousSquare = this.board.getSelectedSquare();
     this.boardSquares[previousSquare.row][previousSquare.column].classList.remove(CSS.highlightSquare);
     this.board.getPreviousHighlight().forEach(({ row, column }) => {
-      this.boardSquares[row][column].classList.remove(CSS.highlightSquareMove);
-      this.boardSquares[row][column].onclick = null;
+      const square = this.boardSquares[row][column];
+      if (!square.firstChild) {
+        square.onclick = null;
+      }
+      square.classList.remove(CSS.highlightSquareMove);
     });
 
     // Add highlight to selected square
@@ -793,6 +872,7 @@ XiangQi.prototype = {
     }
     targetSquare.appendChild(pieceElem);
     targetSquare.onclick = () => this._squareOnClickHandler(row, col);
+    console.log(this.board.getBoardContent());
   }
 };
 
