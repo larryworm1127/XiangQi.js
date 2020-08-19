@@ -602,6 +602,10 @@ XiangQi.prototype = {
     this._removeBoardDOM();
   },
 
+  /**
+   *
+   * @param newWidth {number} The new width for the board
+   */
   resizeBoard: function (newWidth) {
     this.boardWidth = newWidth;
     this.boardHeight = _getBoardHeight(newWidth);
@@ -611,11 +615,10 @@ XiangQi.prototype = {
 
   /**
    *
-   *
    * @param moveString {string} Standard XiangQi move notation.
    */
   movePiece: function (moveString) {
-    const move = moveStringToMove(moveString, this.board);
+    const move = moveStringToMove(moveString);
     if (this.board.move(move)) {
       this.clearBoard(false);
       this.drawBoardContent();
@@ -758,6 +761,10 @@ XiangQi.prototype = {
 
     this.boardSquares.forEach((row) => {
       row.forEach((square) => {
+        if (square.firstChild) {
+          square.firstChild.style.width = `${this.squareSize}px`;
+          square.firstChild.style.height = `${this.squareSize}px`;
+        }
         square.style.width = `${this.squareSize}px`;
         square.style.height = `${this.squareSize}px`;
       });
@@ -1028,8 +1035,8 @@ const moveStringToMove = function (moveString) {
   const formerPos = split[0].split('');
   const newPos = split[1].split('');
   return Move(
-    Position(parseInt(formerPos[0]), parseInt(formerPos[1])),
-    Position(parseInt(newPos[0]), parseInt(newPos[1]))
+    Position(parseInt(formerPos[0]) - 1, parseInt(formerPos[1]) - 1),
+    Position(parseInt(newPos[0]) - 1, parseInt(newPos[1]) - 1)
   );
 };
 
