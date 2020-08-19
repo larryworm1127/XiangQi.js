@@ -45,6 +45,22 @@ const SIDES = {
 };
 
 // ======================================================================
+// Objects functions
+// ======================================================================
+function Piece(type, side) {
+  return { type, side };
+}
+
+function Position(row, column) {
+  return { row, column };
+}
+
+function Move(oldPos, newPos) {
+  return { oldPos, newPos };
+}
+
+
+// ======================================================================
 // A virtual XiangQi board
 // Used to keep track of XiangQi pieces on the board.
 // ======================================================================
@@ -120,6 +136,14 @@ class Board {
         this.removePiece(rowIndex, colIndex);
       });
     });
+  };
+
+  flipBoard = () => {
+    const newBoard = [];
+    this.board.forEach((row) => {
+      newBoard.unshift([...row]);
+    });
+    this.setBoardContent(newBoard);
   };
 
   setStartPosition = (redOnBottom) => {
@@ -542,22 +566,6 @@ class Board {
 
 
 // ======================================================================
-// Objects functions
-// ======================================================================
-function Piece(type, side) {
-  return { type: type, side: side };
-}
-
-function Position(row, column) {
-  return { row: row, column: column };
-}
-
-function Move(oldPos, newPos) {
-  return { oldPos: oldPos, newPos: newPos };
-}
-
-
-// ======================================================================
 // Main library function
 // ======================================================================
 function XiangQi(inputConfig) {
@@ -600,6 +608,12 @@ XiangQi.prototype = {
 
   removeBoard: function () {
     this._removeBoardDOM();
+  },
+
+  flipBoard: function () {
+    this.board.flipBoard();
+    this.clearBoard(false);
+    this.drawBoardContent();
   },
 
   /**
