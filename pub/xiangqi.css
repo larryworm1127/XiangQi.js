@@ -35,7 +35,7 @@
 }
 
 .highlight-square {
-    background: pink;
+    box-shadow: inset 0 0 3px 3px white;
 }
 
 .highlight-square-move {

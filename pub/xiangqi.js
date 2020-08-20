@@ -88,6 +88,7 @@
       this.voidPieces = config.clickable === 'void';
       this.selectedSquare = { row: 0, column: 0 };
       this.previousHighlight = [];
+      this.isHighlighted = false;
     }
 
     /**
@@ -736,9 +737,7 @@
       this.boardSquares.forEach((row, rowIndex) => {
         row.forEach((square, colIndex) => {
           if (square.firstChild) {
-            square.onclick = () => {
-              _squareOnClickHandler(this, rowIndex, colIndex);
-            };
+            square.onclick = () => _squareOnClickHandler(this, rowIndex, colIndex);
           }
         });
       });
@@ -916,8 +915,8 @@
       if (squareBelow && currentSquare !== squareBelow) {
         // Update virtual board
         const posStr = squareBelow.id.split('-');
-        const newMove = new Position(parseInt(posStr[0]), parseInt(posStr[1]));
-        XiangQi.board.move(new Move(lastPosition, newMove));
+        const newMove = Position(parseInt(posStr[0]), parseInt(posStr[1]));
+        XiangQi.board.move(Move(lastPosition, newMove));
         lastPosition.row = newMove.row;
         lastPosition.column = newMove.column;
 
@@ -937,13 +936,8 @@
     document.addEventListener('mousemove', _mouseMoveDragHandler);
 
     piece.onmouseup = () => {
-      _mouseUpDragHandler(
-        XiangQi,
-        piece,
-        _mouseMoveDragHandler,
-        currentSquare,
-        lastSquare,
-      );
+      _mouseUpDragHandler(piece, _mouseMoveDragHandler, currentSquare, lastSquare);
+      console.log(XiangQi.board.board)
     };
   }
 
@@ -974,20 +968,31 @@
       }
       square.classList.remove(CSS.highlightSquareMove);
     });
+    XiangQi.makeClickable();
 
-    // Add highlight to selected square
-    XiangQi.boardSquares[row][col].classList.add(CSS.highlightSquare);
+    // Update highlight state tracker
+    const isHighlighted = XiangQi.board.isHighlighted
+    const isSamePieceClicked = previousSquare.row === row && previousSquare.column === col
+    if (isHighlighted || isSamePieceClicked) {
+      XiangQi.board.isHighlighted = false;
+    }
 
-    // Show possible moves
-    const moves = XiangQi.board.getValidMoves(row, col);
-    XiangQi.board.setPreviousHighlight(moves);
-    XiangQi.board.updateSelectedSquare(row, col);
-    moves.forEach(({ row, column }) => {
-      XiangQi.boardSquares[row][column].classList.add(CSS.highlightSquareMove);
-      XiangQi.boardSquares[row][column].onclick = () => {
-        _squareOnClickMoveHandler(XiangQi, row, column);
-      };
-    });
+    // Add new highlights
+    if (!isHighlighted || !isSamePieceClicked) {
+      XiangQi.board.isHighlighted = true;
+
+      // Add highlight to selected square
+      XiangQi.boardSquares[row][col].classList.add(CSS.highlightSquare);
+
+      // Show possible moves
+      const moves = XiangQi.board.getValidMoves(row, col);
+      XiangQi.board.setPreviousHighlight(moves);
+      XiangQi.board.updateSelectedSquare(row, col);
+      moves.forEach(({ row, column }) => {
+        XiangQi.boardSquares[row][column].classList.add(CSS.highlightSquareMove);
+        XiangQi.boardSquares[row][column].onclick = () => _squareOnClickMoveHandler(XiangQi, row, column);
+      });
+    }
   }
 
   function _squareOnClickMoveHandler(XiangQi, row, col) {
@@ -998,6 +1003,7 @@
 
     // Update virtual board
     XiangQi.board.move(Move(Position(currSquare.row, currSquare.column), Position(row, col)));
+    XiangQi.board.isHighlighted = false;
 
     // Remove highlights
     XiangQi.boardSquares[currSquare.row][currSquare.column].classList.remove(CSS.highlightSquare);
@@ -1017,6 +1023,26 @@
     // Update sidebar if there is one
     if (XiangQi.hasSideBar) {
       _updateSideBar(XiangQi);
+    }
+  }
+
+  // centers the ball at (pageX, pageY) coordinates
+  function _moveAt(pageX, pageY, shiftX, shiftY, piece) {
+    piece.style.left = `${pageX - shiftX}px`;
+    piece.style.top = `${pageY - shiftY}px`;
+  }
+
+
+  function _enterSquare(elem) {
+    if (elem) {
+      elem.classList.add(CSS.highlightSquare);
+    }
+  }
+
+
+  function _leaveSquare(elem) {
+    if (elem) {
+      elem.classList.remove(CSS.highlightSquare);
     }
   }
 
@@ -1045,27 +1071,6 @@
 
   function _getSquareSize(boardWidth) {
     return (boardWidth - 2) / NUM_COLS;
-  }
-
-
-  // centers the ball at (pageX, pageY) coordinates
-  function _moveAt(pageX, pageY, shiftX, shiftY, piece) {
-    piece.style.left = `${pageX - shiftX}px`;
-    piece.style.top = `${pageY - shiftY}px`;
-  }
-
-
-  function _enterSquare(elem) {
-    if (elem) {
-      elem.classList.add(CSS.highlightSquare);
-    }
-  }
-
-
-  function _leaveSquare(elem) {
-    if (elem) {
-      elem.classList.remove(CSS.highlightSquare);
-    }
   }
 
 
