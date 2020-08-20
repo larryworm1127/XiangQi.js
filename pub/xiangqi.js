@@ -187,7 +187,7 @@
     };
 
     getSelectedSquare = () => {
-      return this.selectedSquare;
+      return {...this.selectedSquare};
     };
 
     updateSelectedSquare = (row, col) => {
@@ -712,8 +712,12 @@
       this.boardSquares.forEach((row, rowIndex) => {
         row.forEach(({ firstChild }, colIndex) => {
           if (firstChild) {
-            firstChild.onmousedown = (event) => _mouseDownDragHandler(this, event, firstChild, rowIndex, colIndex);
-            firstChild.ondragstart = () => false;
+            firstChild.onmousedown = (event) => {
+              _mouseDownDragHandler(this, event, firstChild, rowIndex, colIndex);
+            }
+            firstChild.ondragstart = () => {
+              return false;
+            }
           }
         });
       });
@@ -737,7 +741,9 @@
       this.boardSquares.forEach((row, rowIndex) => {
         row.forEach((square, colIndex) => {
           if (square.firstChild) {
-            square.onclick = () => _squareOnClickHandler(this, rowIndex, colIndex);
+            square.onclick = () => {
+              _squareOnClickHandler(this, rowIndex, colIndex);
+            }
           }
         });
       });
@@ -912,7 +918,7 @@
       }
 
       const squareBelow = elemBelow.closest('.square');
-      if (squareBelow && currentSquare !== squareBelow) {
+      if (squareBelow && !squareBelow.firstChild && currentSquare !== squareBelow) {
         // Update virtual board
         const posStr = squareBelow.id.split('-');
         const newMove = Position(parseInt(posStr[0]), parseInt(posStr[1]));
@@ -937,7 +943,6 @@
 
     piece.onmouseup = () => {
       _mouseUpDragHandler(piece, _mouseMoveDragHandler, currentSquare, lastSquare);
-      console.log(XiangQi.board.board)
     };
   }
 
@@ -990,7 +995,9 @@
       XiangQi.board.updateSelectedSquare(row, col);
       moves.forEach(({ row, column }) => {
         XiangQi.boardSquares[row][column].classList.add(CSS.highlightSquareMove);
-        XiangQi.boardSquares[row][column].onclick = () => _squareOnClickMoveHandler(XiangQi, row, column);
+        XiangQi.boardSquares[row][column].onclick = () => {
+          _squareOnClickMoveHandler(XiangQi, row, column);
+        }
       });
     }
   }
@@ -1018,7 +1025,9 @@
       targetSquare.removeChild(targetSquare.firstChild);
     }
     targetSquare.appendChild(pieceElem);
-    targetSquare.onclick = () => _squareOnClickHandler(XiangQi, row, col);
+    targetSquare.onclick = () => {
+      _squareOnClickHandler(XiangQi, row, col);
+    }
 
     // Update sidebar if there is one
     if (XiangQi.hasSideBar) {
