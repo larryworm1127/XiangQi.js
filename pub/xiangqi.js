@@ -1,32 +1,6 @@
 'use strict';
 
 
-// Enums
-const PIECES = {
-  general: 'General',
-  advisor: 'Advisor',
-  elephant: 'Elephant',
-  cannon: 'Cannon',
-  chariot: 'Chariot',
-  horse: 'Horse',
-  soldier: 'Soldier',
-  empty: 'Empty'
-};
-const ABBREVIATION = {
-  A: PIECES.advisor,
-  C: PIECES.cannon,
-  R: PIECES.chariot,
-  E: PIECES.elephant,
-  G: PIECES.general,
-  H: PIECES.horse,
-  S: PIECES.soldier
-};
-const SIDES = {
-  red: 'r',
-  black: 'b'
-};
-
-
 (function (global) {
 
   // ----------------------------------------------------------------------
@@ -45,6 +19,31 @@ const SIDES = {
     highlightSquareMove: 'highlight-square-move'
   };
   const PIECE_PATH = 'assets/pieces/';
+
+  // Enums
+  const PIECES = {
+    general: 'General',
+    advisor: 'Advisor',
+    elephant: 'Elephant',
+    cannon: 'Cannon',
+    chariot: 'Chariot',
+    horse: 'Horse',
+    soldier: 'Soldier',
+    empty: 'Empty'
+  };
+  const ABBREVIATION = {
+    A: PIECES.advisor,
+    C: PIECES.cannon,
+    R: PIECES.chariot,
+    E: PIECES.elephant,
+    G: PIECES.general,
+    H: PIECES.horse,
+    S: PIECES.soldier
+  };
+  const SIDES = {
+    red: 'r',
+    black: 'b'
+  };
 
   // XiangQi related constants
   const NUM_ROWS = 10;
@@ -189,7 +188,6 @@ const SIDES = {
     getSelectedSquare = () => {
       return this.selectedSquare;
     };
-    board;
 
     updateSelectedSquare = (row, col) => {
       this.selectedSquare.row = row;
@@ -576,8 +574,8 @@ const SIDES = {
   // ----------------------------------------------------------------------
   // Main library function
   // ----------------------------------------------------------------------
-  function XiangQi(inputConfig) {
-    this.config = _buildConfig(inputConfig);
+  function XiangQi(initialConfig) {
+    this.config = _buildConfig(initialConfig);
     this.boardWidth = this.config.boardSize;
     this.containerElement = this.config.container;
     this.boardDiv = null;
@@ -644,6 +642,10 @@ const SIDES = {
       if (this.board.move(move)) {
         this.clearBoard(false);
         this.drawBoardContent();
+
+        if (this.hasSideBar) {
+          _updateSideBar(this);
+        }
       }
     },
 
@@ -692,6 +694,14 @@ const SIDES = {
       } else {
         _updateSideBar(this);
       }
+    },
+
+    enableVoidPieces: function () {
+      this.board.voidPieces = true;
+    },
+
+    disableVoidPieces: function () {
+      this.board.voidPieces = false;
     },
 
     makeDraggable: function () {
@@ -995,6 +1005,11 @@ const SIDES = {
     }
     targetSquare.appendChild(pieceElem);
     targetSquare.onclick = () => _squareOnClickHandler(XiangQi, row, col);
+
+    // Update sidebar if there is one
+    if (XiangQi.hasSideBar) {
+      _updateSideBar(XiangQi);
+    }
   }
 
   // ----------------------------------------------------------------------
