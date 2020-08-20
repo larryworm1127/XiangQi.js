@@ -85,7 +85,7 @@
         this.board = new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(Piece(PIECES.empty)));
       }
 
-      this.voidPieces = config.voidPieces;
+      this.voidPieces = config.clickable === 'void';
       this.selectedSquare = { row: 0, column: 0 };
       this.previousHighlight = [];
     }
@@ -584,7 +584,7 @@
     this.boardHeight = _getBoardHeight(this.boardWidth);
     this.boardSquares = [[], [], [], [], [], [], [], [], [], []];
     this.board = new Board(this.config);
-    this.hasSideBar = this.config.showSideBar;
+    this.hasSideBar = false;
 
     // Draw board and its content if delayDraw is disabled in config
     if (!this.config.delayDraw) {
@@ -879,11 +879,13 @@
     XiangQi.containerElement.removeChild(XiangQi.boardDiv);
   }
 
+  // ----------------------------------------------------------------------
+  // Event handlers (private)
+  // ----------------------------------------------------------------------
   function _mouseDownDragHandler(XiangQi, event, piece, rowIndex, colIndex) {
     let lastSquare = null;
     let currentSquare = null;
     const lastPosition = new Position(rowIndex, colIndex);
-    const board = XiangQi.board;
 
     const shiftX = event.clientX - piece.getBoundingClientRect().left;
     const shiftY = event.clientY - piece.getBoundingClientRect().top;
@@ -915,7 +917,7 @@
         // Update virtual board
         const posStr = squareBelow.id.split('-');
         const newMove = new Position(parseInt(posStr[0]), parseInt(posStr[1]));
-        board.move(new Move(lastPosition, newMove));
+        XiangQi.board.move(new Move(lastPosition, newMove));
         lastPosition.row = newMove.row;
         lastPosition.column = newMove.column;
 
@@ -935,7 +937,13 @@
     document.addEventListener('mousemove', _mouseMoveDragHandler);
 
     piece.onmouseup = () => {
-      _mouseUpDragHandler(piece, _mouseMoveDragHandler, currentSquare, lastSquare);
+      _mouseUpDragHandler(
+        XiangQi,
+        piece,
+        _mouseMoveDragHandler,
+        currentSquare,
+        lastSquare,
+      );
     };
   }
 
@@ -1025,8 +1033,7 @@
       draggable: ('draggable' in config) ? config['draggable'] : false,
       delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
       redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
-      clickable: ('clickable' in config) ? config['clickable'] : false,
-      voidPieces: ('voidPieces' in config) ? config['voidPieces'] : false
+      clickable: ('clickable' in config) ? config['clickable'] : 'no-void',
     };
   }
 
