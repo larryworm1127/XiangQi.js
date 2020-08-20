@@ -91,7 +91,7 @@
         this.board = new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(Piece(PIECES.empty)));
       }
 
-      if (config.clickable === 'void') {
+      if (config.voidPieces) {
         this.voidPieces = true;
       }
     }
@@ -1101,7 +1101,8 @@
       draggable: ('draggable' in config) ? config['draggable'] : false,
       delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
       redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
-      clickable: ('clickable' in config) ? config['clickable'] : 'no-void',
+      clickable: ('clickable' in config) ? config['clickable'] : false,
+      voidPieces: ('voidPieces' in config) ? config['voidPieces'] : false
     };
   }
 

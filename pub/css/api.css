@@ -1,0 +1,40 @@
+#doc-container {
+    margin-top: 2%;
+}
+
+.doc-section {
+    margin-top: 3%;
+}
+
+.doc-table {
+    margin-top: 1%;
+}
+
+.property-col {
+    font-family: "Courier New", Courier, monospace;
+    width: 17%;
+}
+
+.default-col {
+    font-family: "Courier New", Courier, monospace;
+    width: 15%
+}
+
+.type-col {
+    font-family: "Courier New", Courier, monospace;
+    width: 23%;
+}
+
+.func-col {
+    font-family: "Courier New", Courier, monospace;
+    width: 30%;
+}
+
+.args-col {
+    font-family: "Courier New", Courier, monospace;
+    width: 30%;
+}
+
+.footer {
+    margin-top: 5%;
+}

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>XiangQi.js - API Docs</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/api.css" rel="stylesheet">
+  </head>
+  <body>
+    <header class="masthead mb-auto">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+          <a class="navbar-brand" href="#">XiangQi.js</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Examples</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="#">API Doc</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <div class="container" id="doc-container">
+        <div class="row">
+          <h1>Documentation</h1>
+        </div>
+
+        <div class="row doc-section">
+          <h3>Initial Config options</h3>
+
+          <table class="table table-striped table-bordered doc-table">
+            <caption>Note that most of the configurations can be changed later</caption>
+            <thead>
+              <tr>
+                <th scope="col">Property</th>
+                <th scope="col">Default</th>
+                <th scope="col">Type</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row" class="property-col">boardSize</th>
+                <td class="default-col">400</td>
+                <td class="type-col">Integer</td>
+                <td>
+                  The width of the board to be displayed on the web page.
+                  The height of the board as well as the size of each piece will be calculated
+                  based off this value.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="property-col">containerId</th>
+                <td class="default-col">None</td>
+                <td class="type-col">String</td>
+                <td>
+                  The ID of the container for which the board will be placed in.
+                  Defaulted to top level document.body if no ID given.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="property-col">boardContent</th>
+                <td class="default-col">[]</td>
+                <td class="type-col">2D-array of objects or <br/> String</td>
+                <td>
+                  The content of the board to be displayed.
+                  Can be in the form of a 2D-array of <a>Piece</a> object or
+                  in the form of <a>FEN string</a>. If the user wish to display
+                  the board in starting position, pass in 'start' for boardContent.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="property-col">showSideBar</th>
+                <td class="default-col">false</td>
+                <td class="type-col">boolean</td>
+                <td>
+                  Setting showSideBar to true will draw a panel on the side of the board
+                  showing the number of pieces on the current board upon calling the API.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="property-col">draggable</th>
+                <td class="default-col">false</td>
+                <td class="type-col">boolean</td>
+                <td>
+                  Setting draggable to true will allow each pieces on the board to be dragged
+                  around and dropped in an empty square on the board.
+                  <br/>
+                  <br/>
+                  Note that this option will be overridden if clickable = true.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="property-col">delayDraw</th>
+                <td class="default-col">false</td>
+                <td class="type-col">boolean</td>
+                <td>
+                  Setting delayDraw to true will delay the creation of the XiangQi board on the web page.
+                  This allows user to create interactive components where the game board is drawn
+                  upon certain external trigger.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="property-col">redOnBottom</th>
+                <td class="default-col">false</td>
+                <td class="type-col">boolean</td>
+                <td>
+                  redOnBottom determines the orientation of the board. Setting it to true will
+                  cause newly generated start position board to have red side on the bottom of
+                  the board rather than on top.
+                  <br/>
+                  <br/>
+                  Note that this option ONLY works when boardContent = 'start'.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="property-col">clickable</th>
+                <td class="default-col">false</td>
+                <td class="type-col">boolean</td>
+                <td>
+                  Setting clickable to true will allow the generated board pieces to be clickable.
+                  Clicking specific pieces on the board will highlight the piece as well as all its
+                  possible moves. The user can either click the same piece again to remove the highlighting,
+                  or to click one of the highlighted squares to move the piece to that location.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="property-col">voidPieces</th>
+                <td class="default-col">false</td>
+                <td class="type-col">boolean</td>
+                <td>
+                  Setting voidPieces to true will enable clickable feature to show moves that can remove
+                  non-friendly pieces, which also allows user to click on those moves and void the pieces.
+                  If side bar is also shown, then voiding pieces will automatically update piece counts.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row doc-section">
+          <h3>API Functions</h3>
+
+          <table class="table table-striped table-bordered doc-table">
+            <thead>
+              <tr>
+                <th scope="col">Function</th>
+                <th scope="col">Arguments</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row" class="func-col">drawBoard()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Create an empty XiangQi board in given container element.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">removeBoard()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Remove the XiangQi board from the given container element.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">flipBoard()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Flip the orientation of the board. (Flip red and black sides)
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">resizeBoard()</th>
+                <td class="args-col">newWidth</td>
+                <td>
+                  Re-size the current XiangQi board to given &lt;newWidth&gt;. <br/>
+                  If side bar is present, it will be resized to the same ratio.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">movePiece()</th>
+                <td class="args-col">moveString</td>
+                <td>
+                  Update the XiangQi board state using given &lt;moveString&gt; and
+                  draw out the updated board content. The function will do nothing is
+                  either the moveString is invalid or if the move is invalid.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">drawStartPositions()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Set the XiangQi board current state to start positions and draw it out
+                  on the XiangQi board.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">drawBoardContent()</th>
+                <td class="args-col">boardContent</td>
+                <td>
+                  If &lt;boardContent&gt; is provided, then the function will update the current
+                  board content with given one and draw it out on the XiangQi board. Otherwise,
+                  the function will clear the board and draw out current board content
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">clearBoard()</th>
+                <td class="args-col">clearVirtual</td>
+                <td>
+                  Removes clear all pieces from both the physical XiangQi board as well as virtual XiangQi board.
+                  If clearVirtual is set to false, then the clear will only reflect on the DOM.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">drawPiece()</th>
+                <td class="args-col">row, col, piece, side</td>
+                <td>
+                  Draw out given &lt;piece&gt; at position (&lt;row&gt;, &lt;col&gt;).
+                  If the position is already occupied, then the function will do nothing.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">removePiece()</th>
+                <td class="args-col">row, col</td>
+                <td>
+                  Remove the piece from position (&lt;row&gt;, &lt;col&gt;).
+                  If the position is empty, then the function will do nothing.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">drawSideBar()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Add the side panel showing piece counts for current state of the board to the DOM.
+                  If a side bar is already present, then the function will update the side bar content.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">removeSideBar()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Removes the side bar from the DOM.
+                  If there is no side bar, then the function will do nothing.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">enableVoidPieces()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Enables void pieces such that clickable will be allowed to void non-friendly pieces.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">disableVoidPieces()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Disables void pieces such that clickable will not be allowed to void any pieces.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">makeDraggable()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Makes all pieces on current XiangQi board draggable.
+                  makeDraggable will disable clickable feature upon call.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">removeDraggable()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Removes draggable feature for all pieces on the board.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">makeClickable()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Makes all pieces on current XiangQi board clickable.
+                  makeDraggable will disable draggable feature upon call.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" class="func-col">removeClickable()</th>
+                <td class="args-col">none</td>
+                <td>
+                  Removes clickable feature for all pieces on the board.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+    </footer>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"></script>
+    <script src="vendor/js/popper.min.js"></script>
+    <script src="vendor/js/bootstrap.min.js"></script>
+  </body>
+</html>
