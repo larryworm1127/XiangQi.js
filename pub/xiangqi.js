@@ -214,6 +214,10 @@
       this.board = redOnBottom ? RED_BOT_BOARD_CONTENT : RED_TOP_BOARD_CONTENT;
     };
 
+    /**
+     *
+     * @return {{r: {PIECES: number}, b: {PIECES: number}}}
+     */
     getPieceCounts = () => {
       const result = {
         r: {},
@@ -297,22 +301,33 @@
         const boardContent = board.boardContent;
 
         let canJump = false;
-        let rowBelow = pos.row + 1;
-        while (rowBelow < NUM_ROWS) {
-          const square = boardContent[rowBelow][pos.column];
+
+        function cannonMovesHelper(position) {
+          const square = boardContent[position.row][position.column];
           if (square.type !== PIECES.empty) {
             if (!board.voidPieces) {
-              break;
+              return false;
             }
             if (!canJump) {
               canJump = true;
+              return true;
             } else if (square.side !== piece.side && canJump) {
-              possibleMoves.push(Position(rowBelow, pos.column));
-              break;
+              possibleMoves.push(position);
+              return false;
+            } else if (square.side === piece.side && canJump) {
+              return false;
             }
           }
           if (!canJump) {
-            possibleMoves.push(Position(rowBelow, pos.column));
+            possibleMoves.push(position);
+          }
+          return true;
+        }
+
+        let rowBelow = pos.row + 1;
+        while (rowBelow < NUM_ROWS) {
+          if (!cannonMovesHelper(Position(rowBelow, pos.column))) {
+            break;
           }
           rowBelow += 1;
         }
@@ -320,20 +335,8 @@
         let rowAbove = pos.row - 1;
         canJump = false;
         while (rowAbove >= 0) {
-          const square = boardContent[rowAbove][pos.column];
-          if (square.type !== PIECES.empty) {
-            if (!board.voidPieces) {
-              break;
-            }
-            if (!canJump) {
-              canJump = true;
-            } else if (square.side !== piece.side && canJump) {
-              possibleMoves.push(Position(rowAbove, pos.column));
-              break;
-            }
-          }
-          if (!canJump) {
-            possibleMoves.push(Position(rowAbove, pos.column));
+          if (!cannonMovesHelper(Position(rowAbove, pos.column))) {
+            break;
           }
           rowAbove -= 1;
         }
@@ -341,20 +344,8 @@
         let colRight = pos.column + 1;
         canJump = false;
         while (colRight < NUM_COLS) {
-          const square = boardContent[pos.row][colRight];
-          if (square.type !== PIECES.empty) {
-            if (!board.voidPieces) {
-              break;
-            }
-            if (!canJump) {
-              canJump = true;
-            } else if (square.side !== piece.side && canJump) {
-              possibleMoves.push(Position(pos.row, colRight));
-              break;
-            }
-          }
-          if (!canJump) {
-            possibleMoves.push(Position(pos.row, colRight));
+          if (!cannonMovesHelper(Position(pos.row, colRight))) {
+            break;
           }
           colRight += 1;
         }
@@ -362,20 +353,8 @@
         let colLeft = pos.column - 1;
         canJump = false;
         while (colLeft >= 0) {
-          const square = boardContent[pos.row][colLeft];
-          if (square.type !== PIECES.empty) {
-            if (!board.voidPieces) {
-              break;
-            }
-            if (!canJump) {
-              canJump = true;
-            } else if (square.side !== piece.side && canJump) {
-              possibleMoves.push(Position(pos.row, colLeft));
-              break;
-            }
-          }
-          if (!canJump) {
-            possibleMoves.push(Position(pos.row, colLeft));
+          if (!cannonMovesHelper(Position(pos.row, colLeft))) {
+            break;
           }
           colLeft -= 1;
         }
@@ -386,63 +365,47 @@
         const possibleMoves = [];
         const boardContent = board.boardContent;
 
+        function chariotMovesHelper(position) {
+          const square = boardContent[position.row][position.column];
+          if (square.type !== PIECES.empty) {
+            if ((board.voidPieces) ? square.side !== piece.side : square.type === PIECES.empty) {
+              possibleMoves.push(position);
+            }
+            return false;
+          }
+          possibleMoves.push(position);
+          return true;
+        }
+
         let rowBelow = pos.row + 1;
         while (rowBelow < NUM_ROWS) {
-          if (boardContent[rowBelow][pos.column].type !== PIECES.empty) {
-            if ((board.voidPieces) ?
-              boardContent[rowBelow][pos.column].side !== piece.side :
-              boardContent[rowBelow][pos.column].type === PIECES.empty
-            ) {
-              possibleMoves.push(Position(rowBelow, pos.column));
-            }
+          if (!chariotMovesHelper(Position(rowBelow, pos.column))) {
             break;
           }
-          possibleMoves.push(Position(rowBelow, pos.column));
           rowBelow += 1;
         }
 
         let rowAbove = pos.row - 1;
         while (rowAbove >= 0) {
-          if (boardContent[rowAbove][pos.column].type !== PIECES.empty) {
-            if ((board.voidPieces) ?
-              boardContent[rowAbove][pos.column].side !== piece.side :
-              boardContent[rowAbove][pos.column].type === PIECES.empty
-            ) {
-              possibleMoves.push(Position(rowAbove, pos.column));
-            }
+          if (!chariotMovesHelper(Position(rowAbove, pos.column))) {
             break;
           }
-          possibleMoves.push(Position(rowAbove, pos.column));
           rowAbove -= 1;
         }
 
         let colRight = pos.column + 1;
         while (colRight < NUM_COLS) {
-          if (boardContent[pos.row][colRight].type !== PIECES.empty) {
-            if ((board.voidPieces) ?
-              boardContent[pos.row][colRight].side !== piece.side :
-              boardContent[pos.row][colRight].type === PIECES.empty
-            ) {
-              possibleMoves.push(Position(pos.row, colRight));
-            }
+          if (!chariotMovesHelper(Position(pos.row, colRight))) {
             break;
           }
-          possibleMoves.push(Position(pos.row, colRight));
           colRight += 1;
         }
 
         let colLeft = pos.column - 1;
         while (colLeft >= 0) {
-          if (boardContent[pos.row][colLeft].type !== PIECES.empty) {
-            if ((board.voidPieces) ?
-              boardContent[pos.row][colLeft].side !== piece.side :
-              boardContent[pos.row][colLeft].type === PIECES.empty
-            ) {
-              possibleMoves.push(Position(pos.row, colLeft));
-            }
+          if (!chariotMovesHelper(Position(pos.row, colLeft))) {
             break;
           }
-          possibleMoves.push(Position(pos.row, colLeft));
           colLeft -= 1;
         }
         return possibleMoves;
