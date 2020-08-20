@@ -9,6 +9,8 @@
 
     <!-- Custom styles for this template -->
     <link href="css/api.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?skin=desert"></script>
   </head>
   <body>
     <header class="masthead mb-auto">
@@ -44,9 +46,9 @@
         <div class="row doc-section">
           <h3>Initial Config options</h3>
 
-          <table class="table table-striped table-bordered doc-table">
+          <table class="table table-bordered doc-table">
             <caption>Note that most of the configurations can be changed later</caption>
-            <thead>
+            <thead class="thead-dark">
               <tr>
                 <th scope="col">Property</th>
                 <th scope="col">Default</th>
@@ -71,7 +73,7 @@
                 <td class="type-col">String</td>
                 <td>
                   The ID of the container for which the board will be placed in.
-                  Defaulted to top level document.body if no ID given.
+                  Defaulted to top level <code class="snippet">document.body</code> if no ID given.
                 </td>
               </tr>
               <tr>
@@ -79,10 +81,13 @@
                 <td class="default-col">[]</td>
                 <td class="type-col">2D-array of objects or <br/> String</td>
                 <td>
-                  The content of the board to be displayed.
-                  Can be in the form of a 2D-array of <a>Piece</a> object or
-                  in the form of <a>FEN string</a>. If the user wish to display
-                  the board in starting position, pass in 'start' for boardContent.
+                  The content of the board to be displayed. <br/>
+                  Possible values for this properties are:
+                  <ul>
+                    <li>2D-array of <code class="snippet">Piece</code> object.</li>
+                    <li>A <a>FEN</a> string</li>
+                    <li><code class="snippet">'start'</code> to have board in start position</li>
+                  </ul>
                 </td>
               </tr>
               <tr>
@@ -90,7 +95,7 @@
                 <td class="default-col">false</td>
                 <td class="type-col">boolean</td>
                 <td>
-                  Setting showSideBar to true will draw a panel on the side of the board
+                  Setting <code class="snippet">showSideBar: true</code> will draw a panel on the side of the board
                   showing the number of pieces on the current board upon calling the API.
                 </td>
               </tr>
@@ -99,11 +104,11 @@
                 <td class="default-col">false</td>
                 <td class="type-col">boolean</td>
                 <td>
-                  Setting draggable to true will allow each pieces on the board to be dragged
+                  Setting <code class="snippet">draggable: true</code> will allow each pieces on the board to be dragged
                   around and dropped in an empty square on the board.
                   <br/>
                   <br/>
-                  Note that this option will be overridden if clickable = true.
+                  Note that this option will be overridden if <code class="snippet">clickable: true</code>.
                 </td>
               </tr>
               <tr>
@@ -111,8 +116,8 @@
                 <td class="default-col">false</td>
                 <td class="type-col">boolean</td>
                 <td>
-                  Setting delayDraw to true will delay the creation of the XiangQi board on the web page.
-                  This allows user to create interactive components where the game board is drawn
+                  Setting <code class="snippet">delayDraw: true</code> will delay the creation of the XiangQi board
+                  on the web page. This allows user to create interactive components where the game board is drawn
                   upon certain external trigger.
                 </td>
               </tr>
@@ -121,12 +126,13 @@
                 <td class="default-col">false</td>
                 <td class="type-col">boolean</td>
                 <td>
-                  redOnBottom determines the orientation of the board. Setting it to true will
-                  cause newly generated start position board to have red side on the bottom of
-                  the board rather than on top.
+                  <code class="snippet">redOnBottom</code> determines the orientation of the board. Setting it to
+                  <code class="snippet">true</code> will  cause newly generated start position board to have red side
+                  on the bottom of the board rather than on top.
                   <br/>
                   <br/>
-                  Note that this option ONLY works when boardContent = 'start'.
+                  Note that this option <strong>ONLY</strong> works when
+                  <code class="snippet">boardContent: 'start'</code>.
                 </td>
               </tr>
               <tr>
@@ -134,8 +140,8 @@
                 <td class="default-col">false</td>
                 <td class="type-col">boolean</td>
                 <td>
-                  Setting clickable to true will allow the generated board pieces to be clickable.
-                  Clicking specific pieces on the board will highlight the piece as well as all its
+                  Setting <code class="snippet">clickable: true</code> will allow the generated board pieces to be
+                  clickable. Clicking specific pieces on the board will highlight the piece as well as all its
                   possible moves. The user can either click the same piece again to remove the highlighting,
                   or to click one of the highlighted squares to move the piece to that location.
                 </td>
@@ -145,20 +151,22 @@
                 <td class="default-col">false</td>
                 <td class="type-col">boolean</td>
                 <td>
-                  Setting voidPieces to true will enable clickable feature to show moves that can remove
-                  non-friendly pieces, which also allows user to click on those moves and void the pieces.
-                  If side bar is also shown, then voiding pieces will automatically update piece counts.
+                  Setting <code class="snippet">voidPieces: true</code> will enable clickable feature to show moves
+                  that can remove non-friendly pieces, which also allows user to click on those moves and void the
+                  pieces. If side bar is also shown, then voiding pieces will automatically update piece counts.
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
+        <hr>
+
         <div class="row doc-section">
           <h3>API Functions</h3>
 
-          <table class="table table-striped table-bordered doc-table">
-            <thead>
+          <table class="table table-bordered doc-table">
+            <thead class="thead-dark">
               <tr>
                 <th scope="col">Function</th>
                 <th scope="col">Arguments</th>
@@ -191,7 +199,7 @@
                 <th scope="row" class="func-col">resizeBoard()</th>
                 <td class="args-col">newWidth</td>
                 <td>
-                  Re-size the current XiangQi board to given &lt;newWidth&gt;. <br/>
+                  Re-size the current XiangQi board to given <code class="snippet">&lt;newWidth&gt;</code>. <br/>
                   If side bar is present, it will be resized to the same ratio.
                 </td>
               </tr>
@@ -199,9 +207,9 @@
                 <th scope="row" class="func-col">movePiece()</th>
                 <td class="args-col">moveString</td>
                 <td>
-                  Update the XiangQi board state using given &lt;moveString&gt; and
+                  Update the XiangQi board state using given <code class="snippet">&lt;moveString&gt;</code> and
                   draw out the updated board content. The function will do nothing is
-                  either the moveString is invalid or if the move is invalid.
+                  either the <code class="snippet">&lt;moveString&gt;</code> is invalid or if the move is invalid.
                 </td>
               </tr>
               <tr>
@@ -216,9 +224,9 @@
                 <th scope="row" class="func-col">drawBoardContent()</th>
                 <td class="args-col">boardContent</td>
                 <td>
-                  If &lt;boardContent&gt; is provided, then the function will update the current
-                  board content with given one and draw it out on the XiangQi board. Otherwise,
-                  the function will clear the board and draw out current board content
+                  The function will clear the board and draw out current board content.
+                  If <code class="snippet">&lt;boardContent&gt;</code> is provided, then the function will update the
+                  current board content with given one and draw it out on the XiangQi board.
                 </td>
               </tr>
               <tr>
@@ -226,14 +234,16 @@
                 <td class="args-col">clearVirtual</td>
                 <td>
                   Removes clear all pieces from both the physical XiangQi board as well as virtual XiangQi board.
-                  If clearVirtual is set to false, then the clear will only reflect on the DOM.
+                  If <code class="snippet">&lt;clearVirtual&gt;</code> is set to <code class="snippet">false</code>,
+                  then the clear will only reflect on the DOM.
                 </td>
               </tr>
               <tr>
                 <th scope="row" class="func-col">drawPiece()</th>
                 <td class="args-col">row, col, piece, side</td>
                 <td>
-                  Draw out given &lt;piece&gt; at position (&lt;row&gt;, &lt;col&gt;).
+                  Draw out given <code class="snippet">&lt;piece&gt;</code> at position
+                  <code class="snippet">(&lt;row&gt;, &lt;col&gt;)</code>.
                   If the position is already occupied, then the function will do nothing.
                 </td>
               </tr>
@@ -241,7 +251,7 @@
                 <th scope="row" class="func-col">removePiece()</th>
                 <td class="args-col">row, col</td>
                 <td>
-                  Remove the piece from position (&lt;row&gt;, &lt;col&gt;).
+                  Remove the piece from position <code class="snippet">(&lt;row&gt;, &lt;col&gt;)</code>.
                   If the position is empty, then the function will do nothing.
                 </td>
               </tr>
