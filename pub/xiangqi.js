@@ -642,7 +642,7 @@
      */
     movePiece: function (moveString) {
       const move = moveStringToObj(moveString);
-      if (this.board.move(move)) {
+      if (move && this.board.move(move)) {
         this.clearBoard(false);
         this.drawBoardContent();
 
@@ -657,15 +657,19 @@
       this.drawBoardContent();
     },
 
-    drawBoardContent: function () {
-      const content = this.board.boardContent;
-      content.forEach((row, rowIndex) => {
-        row.forEach((square, colIndex) => {
-          if (square.type !== PIECES.empty) {
-            _drawPieceDOM(this, rowIndex, colIndex, square.type, square.side);
-          }
+    drawBoardContent: function (boardContent = null) {
+      const content = (boardContent) ?
+        (typeof boardContent === 'string') ? parseFenString(boardContent) : boardContent
+        : this.board.boardContent;
+      if (_validateBoardContent(content)) {
+        content.forEach((row, rowIndex) => {
+          row.forEach((square, colIndex) => {
+            if (square.type !== PIECES.empty) {
+              _drawPieceDOM(this, rowIndex, colIndex, square.type, square.side);
+            }
+          });
         });
-      });
+      }
     },
 
     clearBoard: function (clearVirtual = true) {
@@ -870,7 +874,7 @@
 
   function _resizeSideBarDOM(XiangQi, ratio) {
     const title = XiangQi.sideBarDiv.children.item(0);
-    title.style.fontSize = `${100 * ratio}%`
+    title.style.fontSize = `${100 * ratio}%`;
 
     const redSide = XiangQi.sideBarDiv.children.item(1);
     const blackSide = XiangQi.sideBarDiv.children.item(2);
@@ -879,12 +883,12 @@
       const redPieceDiv = redSide.children.item(index);
       redPieceDiv.firstChild.style.width = `${XiangQi.squareSize}px`;
       redPieceDiv.firstChild.style.height = `${XiangQi.squareSize}px`;
-      redPieceDiv.children.item(1).style.fontSize = `${100 * ratio}%`
+      redPieceDiv.children.item(1).style.fontSize = `${100 * ratio}%`;
 
       const blackPieceDiv = blackSide.children.item(index);
       blackPieceDiv.firstChild.style.width = `${XiangQi.squareSize}px`;
       blackPieceDiv.firstChild.style.height = `${XiangQi.squareSize}px`;
-      blackPieceDiv.children.item(1).style.fontSize = `${100 * ratio}%`
+      blackPieceDiv.children.item(1).style.fontSize = `${100 * ratio}%`;
     }
   }
 
@@ -921,7 +925,7 @@
   // Event handlers (private)
   // ----------------------------------------------------------------------
   function _mouseDownDragHandler(XiangQi, event, piece, rowIndex, colIndex) {
-    let lastSquare = null;
+    let lastSquare = XiangQi.boardSquares[rowIndex][colIndex];
     let currentSquare = null;
     const lastPosition = new Position(rowIndex, colIndex);
 
@@ -1118,17 +1122,57 @@
 
 
   /**
+   * Validate whether the given boardContent is valid or not.
+   *
+   * @param boardContent {Array[][]} the board content to be validated.
+   * @return {boolean} true for valid and false for invalid board content.
+   */
+  function _validateBoardContent(boardContent) {
+    if (boardContent.length !== 10) {
+      return false;
+    }
+
+    for (const row in boardContent) {
+      if (boardContent[row].length !== 9) {
+        return false;
+      }
+      for (const col in boardContent[row]) {
+        const square = boardContent[row][col];
+        if (Object.values(PIECES).filter(item => item === square.type).length === 0) {
+          return false;
+        }
+
+        if (square.type !== PIECES.empty && (square.side !== SIDES.red && square.side !== SIDES.black)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+
+  /**
    * Parses a XiangQi move string into a computer readable Move object.
    *
    * @param moveString {string} A move string in form of `[former rank][former file]-[new rank][new file]`
-   * @return {{oldPos: *, newPos: *}} The corresponding Move object.
+   * @return {{oldPos: *, newPos: *} | boolean} The corresponding Move object.
    */
   function moveStringToObj(moveString) {
+    // Validate moveString
+    if (moveString.length !== 5) {
+      return false;
+    }
+
     const split = moveString.split('-');
-    const formerPos = split[0].split('');
+    const oldPos = split[0].split('');
     const newPos = split[1].split('');
+    if (isNaN(parseInt(split[0])) || isNaN(parseInt(split[1]))) {
+      return false;
+    }
+
+    // Build move object
     return Move(
-      Position(parseInt(formerPos[0]) - 1, parseInt(formerPos[1]) - 1),
+      Position(parseInt(oldPos[0]) - 1, parseInt(oldPos[1]) - 1),
       Position(parseInt(newPos[0]) - 1, parseInt(newPos[1]) - 1)
     );
   }
