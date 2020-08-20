@@ -73,60 +73,116 @@
   // ----------------------------------------------------------------------
   class Board {
 
+    #voidPieces = false;
+    #selectedSquare = { row: 0, column: 0 };
+    #previousHighlight = [];
+    #isHighlighted = false;
+    #hasSideBar = false;
+    #board;
+
     constructor(config) {
       if (config.boardContent === 'start') {
         this.setStartPosition(config.redOnBottom);
       } else if (typeof config.boardContent === 'string') {
-        const parsedFen = parseFenString(config.boardContent);
-        this.setBoardContent(parsedFen);
+        this.board = parseFenString(config.boardContent);
       } else if (Array.isArray(config.boardContent) && config.boardContent.length > 0) {
-        this.setBoardContent(config.boardContent);
+        this.board = config.boardContent;
       } else {
         this.board = new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(Piece(PIECES.empty)));
       }
 
-      this.voidPieces = config.clickable === 'void';
-      this.selectedSquare = { row: 0, column: 0 };
-      this.previousHighlight = [];
-      this.isHighlighted = false;
+      if (config.clickable === 'void') {
+        this.voidPieces = true;
+      }
     }
 
+    // ----------------------------------------------------------------------
+    // Getters and setters
+    // ----------------------------------------------------------------------
+    get isHighlighted() {
+      return this.#isHighlighted;
+    }
+
+    set isHighlighted(value) {
+      this.#isHighlighted = value;
+    }
+
+    get voidPieces() {
+      return this.#voidPieces;
+    }
+
+    set voidPieces(value) {
+      this.#voidPieces = value;
+    }
+
+    get hasSideBar() {
+      return this.#hasSideBar;
+    }
+
+    set previousHighlight(highlights) {
+      if (Array.isArray(highlights)) {
+        this.#previousHighlight = [...highlights];
+      }
+    };
+
+    get previousHighlight() {
+      return [...this.#previousHighlight];
+    }
+
+    get redOnTop() {
+      return this.getPiecePos(new Piece(PIECES.general, SIDES.red)).row in [0, 1, 2];
+    }
+
+    set selectedSquare(value) {
+      this.#selectedSquare.row = value.row;
+      this.#selectedSquare.column = value.col;
+    }
+
+    get selectedSquare() {
+      return { ...this.#selectedSquare };
+    };
+
+    set board(boardContent) {
+      this.#board = boardContent.map((row) => {
+        return row.slice();
+      });
+    };
+
+    get boardContent() {
+      return JSON.parse(JSON.stringify(this.#board));
+    };
+
     /**
+     * Update the virtual XiangQi board based on the move object given.
+     *
      * Precondition: the move is valid
      *
-     * @param moveObj A move object that instructs function of what to move.
+     * @param moveObj {{oldPos: *, newPos: *}} A move object that instructs function of what to move.
+     * @return {boolean} A flag to indicate whether the move operation was successful.
      */
     move = (moveObj) => {
-      const square = this.board[moveObj.oldPos.row][moveObj.oldPos.column];
+      const square = this.#board[moveObj.oldPos.row][moveObj.oldPos.column];
       if (square.type === PIECES.empty) {
         return false;
       }
 
-      if (!this.voidPieces && this.board[moveObj.newPos.row][moveObj.newPos.column].type !== PIECES.empty) {
+      if (!this.voidPieces && this.#board[moveObj.newPos.row][moveObj.newPos.column].type !== PIECES.empty) {
         return false;
       }
 
-      this.board[moveObj.oldPos.row][moveObj.oldPos.column] = Piece(PIECES.empty);
-      this.board[moveObj.newPos.row][moveObj.newPos.column] = square;
+      this.#board[moveObj.oldPos.row][moveObj.oldPos.column] = Piece(PIECES.empty);
+      this.#board[moveObj.newPos.row][moveObj.newPos.column] = square;
       return true;
     };
 
-    getBoardContent = () => {
-      return JSON.parse(JSON.stringify(this.board));
-    };
-
     getSquare = (row, col) => {
-      return this.board[row][col];
-    };
-
-    getRedOnTop = () => {
-      return this.getPiecePos(new Piece(PIECES.general, SIDES.red)).row in [0, 1, 2];
+      return this.#board[row][col];
     };
 
     getPiecePos = (piece) => {
       for (let row = 0; row < NUM_ROWS; row++) {
         for (let col = 0; col < NUM_COLS; col++) {
-          const square = this.board[row][col];
+          const square = this.#board[row][col];
           if (square.type === piece.type && square.side === piece.side) {
             return new Position(row, col);
           }
@@ -135,11 +191,11 @@
     };
 
     removePiece = (row, col) => {
-      this.board[row][col] = Piece(PIECES.empty);
+      this.#board[row][col] = Piece(PIECES.empty);
     };
 
     clearBoard = () => {
-      this.board.forEach((row, rowIndex) => {
+      this.#board.forEach((row, rowIndex) => {
         row.forEach((_, colIndex) => {
           this.removePiece(rowIndex, colIndex);
         });
@@ -148,20 +204,14 @@
 
     flipBoard = () => {
       const newBoard = [];
-      this.board.forEach((row) => {
+      this.#board.forEach((row) => {
         newBoard.unshift([...row]);
       });
-      this.setBoardContent(newBoard);
+      this.board = newBoard;
     };
 
     setStartPosition = (redOnBottom) => {
-      this.setBoardContent(redOnBottom ? RED_BOT_BOARD_CONTENT : RED_TOP_BOARD_CONTENT);
-    };
-
-    setBoardContent = (boardContent) => {
-      this.board = boardContent.map((row) => {
-        return row.slice();
-      });
+      this.board = redOnBottom ? RED_BOT_BOARD_CONTENT : RED_TOP_BOARD_CONTENT;
     };
 
     getPieceCounts = () => {
@@ -176,7 +226,7 @@
         }
       });
 
-      this.board.forEach((row) => {
+      this.#board.forEach((row) => {
         row.forEach((square) => {
           if (square.type !== PIECES.empty) {
             result[square.side][square.type] += 1;
@@ -184,23 +234,6 @@
         });
       });
       return result;
-    };
-
-    getSelectedSquare = () => {
-      return {...this.selectedSquare};
-    };
-
-    updateSelectedSquare = (row, col) => {
-      this.selectedSquare.row = row;
-      this.selectedSquare.column = col;
-    };
-
-    setPreviousHighlight = (highlights) => {
-      this.previousHighlight = [...highlights];
-    };
-
-    getPreviousHighlight = () => {
-      return [...this.previousHighlight];
     };
 
     getValidMoves = (row, col) => {
@@ -235,8 +268,8 @@
           return (
             move.column >= 3 & move.column <= 5 &&
             ((move.row >= 0 & move.row <= 2) || (move.row < NUM_ROWS && move.row > NUM_ROWS - 4)) &&
-            ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
-              board.getBoardContent()[move.row][move.column].type === PIECES.empty)
+            ((board.voidPieces) ? board.boardContent[move.row][move.column].side !== piece.side :
+              board.boardContent[move.row][move.column].type === PIECES.empty)
           );
         });
       }
@@ -253,15 +286,15 @@
           return (
             move.column >= 3 & move.column <= 5 &&
             ((move.row >= 0 & move.row <= 2) || (move.row < NUM_ROWS & move.row > NUM_ROWS - 4)) &&
-            ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
-              board.getBoardContent()[move.row][move.column].type === PIECES.empty)
+            ((board.voidPieces) ? board.boardContent[move.row][move.column].side !== piece.side :
+              board.boardContent[move.row][move.column].type === PIECES.empty)
           );
         });
       }
 
       function getCannonMoves(board) {
         const possibleMoves = [];
-        const boardContent = board.getBoardContent();
+        const boardContent = board.boardContent;
 
         let canJump = false;
         let rowBelow = pos.row + 1;
@@ -351,7 +384,7 @@
 
       function getChariotMoves(board) {
         const possibleMoves = [];
-        const boardContent = board.getBoardContent();
+        const boardContent = board.boardContent;
 
         let rowBelow = pos.row + 1;
         while (rowBelow < NUM_ROWS) {
@@ -452,23 +485,23 @@
 
         return possibleMoves.filter((move) => {
           const onTop = (
-            (board.getRedOnTop() && piece.side === SIDES.red) ||
-            (!board.getRedOnTop() && piece.side !== SIDES.red)
+            (board.redOnTop && piece.side === SIDES.red) ||
+            (!board.redOnTop && piece.side !== SIDES.red)
           );
           return onTop ? (
             move.column >= 0 &&
             move.column < NUM_COLS &&
             move.row >= 0 &&
             move.row <= 4 &&
-            ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
-              board.getBoardContent()[move.row][move.column].type === PIECES.empty)
+            ((board.voidPieces) ? board.boardContent[move.row][move.column].side !== piece.side :
+              board.boardContent[move.row][move.column].type === PIECES.empty)
           ) : (
             move.column >= 0 &&
             move.column < NUM_COLS &&
             move.row < NUM_ROWS &&
             move.row > NUM_ROWS - 6 &&
-            ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
-              board.getBoardContent()[move.row][move.column].type === PIECES.empty)
+            ((board.voidPieces) ? board.boardContent[move.row][move.column].side !== piece.side :
+              board.boardContent[move.row][move.column].type === PIECES.empty)
           );
         });
       }
@@ -520,16 +553,16 @@
             move.column < NUM_COLS &&
             move.row >= 0 &&
             move.row < NUM_ROWS &&
-            ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
-              board.getBoardContent()[move.row][move.column].type === PIECES.empty)
+            ((board.voidPieces) ? board.boardContent[move.row][move.column].side !== piece.side :
+              board.boardContent[move.row][move.column].type === PIECES.empty)
           );
         });
       }
 
       function getSoldierMoves(board) {
         const onTop = (
-          (board.getRedOnTop() && piece.side === SIDES.red) ||
-          (!board.getRedOnTop() && piece.side !== SIDES.red)
+          (board.redOnTop && piece.side === SIDES.red) ||
+          (!board.redOnTop && piece.side !== SIDES.red)
         );
         if (onTop) {
           if (pos.row < 5) {
@@ -545,8 +578,8 @@
               move.row < NUM_ROWS &&
               move.column >= 0 &&
               move.column < NUM_COLS &&
-              ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
-                board.getBoardContent()[move.row][move.column].type === PIECES.empty)
+              ((board.voidPieces) ? board.boardContent[move.row][move.column].side !== piece.side :
+                board.boardContent[move.row][move.column].type === PIECES.empty)
             );
           });
         } else {
@@ -563,8 +596,8 @@
               move.row < NUM_ROWS &&
               move.column >= 0 &&
               move.column < NUM_COLS &&
-              ((board.voidPieces) ? board.getBoardContent()[move.row][move.column].side !== piece.side :
-                board.getBoardContent()[move.row][move.column].type === PIECES.empty)
+              ((board.voidPieces) ? board.boardContent[move.row][move.column].side !== piece.side :
+                board.boardContent[move.row][move.column].type === PIECES.empty)
             );
           });
         }
@@ -577,15 +610,15 @@
   // ----------------------------------------------------------------------
   function XiangQi(initialConfig) {
     this.config = _buildConfig(initialConfig);
-    this.boardWidth = this.config.boardSize;
+    this.board = new Board(this.config);
+
     this.containerElement = this.config.container;
     this.boardDiv = null;
+    this.boardSquares = [[], [], [], [], [], [], [], [], [], []];
 
+    this.boardWidth = this.config.boardSize;
     this.squareSize = _getSquareSize(this.boardWidth);
     this.boardHeight = _getBoardHeight(this.boardWidth);
-    this.boardSquares = [[], [], [], [], [], [], [], [], [], []];
-    this.board = new Board(this.config);
-    this.hasSideBar = false;
 
     // Draw board and its content if delayDraw is disabled in config
     if (!this.config.delayDraw) {
@@ -656,7 +689,7 @@
     },
 
     drawBoardContent: function () {
-      const content = this.board.getBoardContent();
+      const content = this.board.boardContent;
       content.forEach((row, rowIndex) => {
         row.forEach((square, colIndex) => {
           if (square.type !== PIECES.empty) {
@@ -714,10 +747,10 @@
           if (firstChild) {
             firstChild.onmousedown = (event) => {
               _mouseDownDragHandler(this, event, firstChild, rowIndex, colIndex);
-            }
+            };
             firstChild.ondragstart = () => {
               return false;
-            }
+            };
           }
         });
       });
@@ -743,7 +776,7 @@
           if (square.firstChild) {
             square.onclick = () => {
               _squareOnClickHandler(this, rowIndex, colIndex);
-            }
+            };
           }
         });
       });
@@ -770,7 +803,7 @@
     XiangQi.boardDiv.style.height = `${XiangQi.boardHeight}px`;
 
     // Add square div
-    XiangQi.board.getBoardContent().forEach((row, rowIndex) => {
+    XiangQi.board.boardContent.forEach((row, rowIndex) => {
       const rowDiv = document.createElement('div');
       rowDiv.className = CSS.row;
 
@@ -964,9 +997,9 @@
 
   function _squareOnClickHandler(XiangQi, row, col) {
     // Remove previous highlight
-    const previousSquare = XiangQi.board.getSelectedSquare();
+    const previousSquare = XiangQi.board.selectedSquare;
     XiangQi.boardSquares[previousSquare.row][previousSquare.column].classList.remove(CSS.highlightSquare);
-    XiangQi.board.getPreviousHighlight().forEach(({ row, column }) => {
+    XiangQi.board.previousHighlight.forEach(({ row, column }) => {
       const square = XiangQi.boardSquares[row][column];
       if (!square.firstChild) {
         square.onclick = null;
@@ -976,8 +1009,8 @@
     XiangQi.makeClickable();
 
     // Update highlight state tracker
-    const isHighlighted = XiangQi.board.isHighlighted
-    const isSamePieceClicked = previousSquare.row === row && previousSquare.column === col
+    const isHighlighted = XiangQi.board.isHighlighted;
+    const isSamePieceClicked = previousSquare.row === row && previousSquare.column === col;
     if (isHighlighted || isSamePieceClicked) {
       XiangQi.board.isHighlighted = false;
     }
@@ -991,20 +1024,20 @@
 
       // Show possible moves
       const moves = XiangQi.board.getValidMoves(row, col);
-      XiangQi.board.setPreviousHighlight(moves);
-      XiangQi.board.updateSelectedSquare(row, col);
+      XiangQi.board.previousHighlight = moves;
+      XiangQi.board.selectedSquare = { row, col };
       moves.forEach(({ row, column }) => {
         XiangQi.boardSquares[row][column].classList.add(CSS.highlightSquareMove);
         XiangQi.boardSquares[row][column].onclick = () => {
           _squareOnClickMoveHandler(XiangQi, row, column);
-        }
+        };
       });
     }
   }
 
   function _squareOnClickMoveHandler(XiangQi, row, col) {
     // Remove piece from old square
-    const currSquare = XiangQi.board.getSelectedSquare();
+    const currSquare = XiangQi.board.selectedSquare;
     const pieceElem = XiangQi.boardSquares[currSquare.row][currSquare.column].firstChild;
     XiangQi.boardSquares[currSquare.row][currSquare.column].removeChild(pieceElem);
 
@@ -1014,7 +1047,7 @@
 
     // Remove highlights
     XiangQi.boardSquares[currSquare.row][currSquare.column].classList.remove(CSS.highlightSquare);
-    XiangQi.board.getPreviousHighlight().forEach(({ row, column }) => {
+    XiangQi.board.previousHighlight.forEach(({ row, column }) => {
       XiangQi.boardSquares[row][column].classList.remove(CSS.highlightSquareMove);
       XiangQi.boardSquares[row][column].onclick = null;
     });
@@ -1027,7 +1060,7 @@
     targetSquare.appendChild(pieceElem);
     targetSquare.onclick = () => {
       _squareOnClickHandler(XiangQi, row, col);
-    }
+    };
 
     // Update sidebar if there is one
     if (XiangQi.hasSideBar) {
