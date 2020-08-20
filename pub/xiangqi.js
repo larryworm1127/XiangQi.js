@@ -119,6 +119,10 @@
       return this.#hasSideBar;
     }
 
+    set hasSideBar(value) {
+      this.#hasSideBar = value;
+    }
+
     set previousHighlight(highlights) {
       if (Array.isArray(highlights)) {
         this.#previousHighlight = [...highlights];
@@ -214,10 +218,6 @@
       this.board = redOnBottom ? RED_BOT_BOARD_CONTENT : RED_TOP_BOARD_CONTENT;
     };
 
-    /**
-     *
-     * @return {{r: {PIECES: number}, b: {PIECES: number}}}
-     */
     getPieceCounts = () => {
       const result = {
         r: {},
@@ -577,6 +577,7 @@
 
     this.containerElement = this.config.container;
     this.boardDiv = null;
+    this.sideBarDiv = null;
     this.boardSquares = [[], [], [], [], [], [], [], [], [], []];
 
     this.boardWidth = this.config.boardSize;
@@ -624,10 +625,15 @@
      * @param newWidth {number} The new width for the board
      */
     resizeBoard: function (newWidth) {
+      const ratio = newWidth / 400;
       this.boardWidth = newWidth;
       this.boardHeight = _getBoardHeight(newWidth);
       this.squareSize = _getSquareSize(newWidth);
       _resizeBoardDOM(this);
+
+      if (this.board.hasSideBar) {
+        _resizeSideBarDOM(this, ratio);
+      }
     },
 
     /**
@@ -640,8 +646,8 @@
         this.clearBoard(false);
         this.drawBoardContent();
 
-        if (this.hasSideBar) {
-          _updateSideBar(this);
+        if (this.board.hasSideBar) {
+          _updateSideBarDOM(this);
         }
       }
     },
@@ -685,11 +691,18 @@
     },
 
     drawSideBar: function () {
-      if (!this.hasSideBar) {
-        _drawSideBar(this);
-        this.hasSideBar = true;
+      if (!this.board.hasSideBar) {
+        _drawSideBarDOM(this);
+        this.board.hasSideBar = true;
       } else {
-        _updateSideBar(this);
+        _updateSideBarDOM(this);
+      }
+    },
+
+    removeSideBar: function () {
+      if (this.board.hasSideBar) {
+        _removeSidebarDOM(this);
+        this.board.hasSideBar = false;
       }
     },
 
@@ -816,15 +829,15 @@
     }
   }
 
-  function _drawSideBar(XiangQi) {
+  function _drawSideBarDOM(XiangQi) {
     // Create sidebar container
-    const sideBar = document.createElement('div');
-    sideBar.className = CSS.sideBar;
+    XiangQi.sideBarDiv = document.createElement('div');
+    XiangQi.sideBarDiv.className = CSS.sideBar;
 
     const sideBarTitle = document.createElement('p');
     sideBarTitle.textContent = 'Piece Counts';
     sideBarTitle.className = CSS.sideBarTitle;
-    sideBar.appendChild(sideBarTitle);
+    XiangQi.sideBarDiv.appendChild(sideBarTitle);
 
     // Get and display piece counts
     const pieceCount = XiangQi.board.getPieceCounts();
@@ -848,14 +861,34 @@
         sideDiv.appendChild(pieceDiv);
       });
 
-      sideBar.appendChild(sideDiv);
+      XiangQi.sideBarDiv.appendChild(sideDiv);
     });
 
     // Add sidebar div to main container
-    XiangQi.containerElement.appendChild(sideBar);
+    XiangQi.containerElement.appendChild(XiangQi.sideBarDiv);
   }
 
-  function _updateSideBar(XiangQi) {
+  function _resizeSideBarDOM(XiangQi, ratio) {
+    const title = XiangQi.sideBarDiv.children.item(0);
+    title.style.fontSize = `${100 * ratio}%`
+
+    const redSide = XiangQi.sideBarDiv.children.item(1);
+    const blackSide = XiangQi.sideBarDiv.children.item(2);
+
+    for (let index = 0; index < redSide.children.length; index++) {
+      const redPieceDiv = redSide.children.item(index);
+      redPieceDiv.firstChild.style.width = `${XiangQi.squareSize}px`;
+      redPieceDiv.firstChild.style.height = `${XiangQi.squareSize}px`;
+      redPieceDiv.children.item(1).style.fontSize = `${100 * ratio}%`
+
+      const blackPieceDiv = blackSide.children.item(index);
+      blackPieceDiv.firstChild.style.width = `${XiangQi.squareSize}px`;
+      blackPieceDiv.firstChild.style.height = `${XiangQi.squareSize}px`;
+      blackPieceDiv.children.item(1).style.fontSize = `${100 * ratio}%`
+    }
+  }
+
+  function _updateSideBarDOM(XiangQi) {
     const pieceCount = XiangQi.board.getPieceCounts();
 
     const sideDivs = document.getElementsByClassName(CSS.sideBarSide);
@@ -878,6 +911,10 @@
 
   function _removeBoardDOM(XiangQi) {
     XiangQi.containerElement.removeChild(XiangQi.boardDiv);
+  }
+
+  function _removeSidebarDOM(XiangQi) {
+    XiangQi.containerElement.removeChild(XiangQi.sideBarDiv);
   }
 
   // ----------------------------------------------------------------------
@@ -1026,8 +1063,8 @@
     };
 
     // Update sidebar if there is one
-    if (XiangQi.hasSideBar) {
-      _updateSideBar(XiangQi);
+    if (XiangQi.board.hasSideBar) {
+      _updateSideBarDOM(XiangQi);
     }
   }
 
