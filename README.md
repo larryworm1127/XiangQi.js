@@ -27,5 +27,5 @@ functions that XiangQi.js provides, or read examples page to see sample of API u
 
 ## Documentation
 
-Here is link to API Doc: https://xiangqijs.herokuapp.com/apis.html
-Here is link to API Examples: https://xiangqijs.herokuapp.com/examples.html
+- Here is link to API Doc: https://xiangqijs.herokuapp.com/apis.html
+- Here is link to API Examples: https://xiangqijs.herokuapp.com/examples.html
