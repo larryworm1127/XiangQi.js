@@ -82,7 +82,10 @@ body {
     font-weight: 700;
 }
 
-
 .mastfoot {
     color: rgba(255, 255, 255, .5);
+}
+
+#centerLogo {
+    margin-bottom: 20pt;
 }
