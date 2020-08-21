@@ -1,0 +1,100 @@
+.boardContainer {
+    display: inline-block;
+    margin: 30px;
+}
+
+.boardContainer img {
+    vertical-align: inherit;
+}
+
+.boardContainer .row {
+    margin-left: 0;
+}
+
+#largeBoard {
+    margin: 30px;
+}
+
+.group-container {
+    display: none;
+}
+
+h4 {
+    font-size: 14px;
+    font-weight: 400;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.example-nav {
+    flex: 25;
+    position: fixed;
+    padding: 20px;
+    width: 14%;
+    margin-top: 20px;
+}
+
+.example-nav h4 {
+    background: #f2f2f2;
+    border-top: 1px solid #e6e6e6;
+    border-right: 1px solid #e6e6e6;
+    border-left: 3px solid #ccc;
+    color: #555;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 0;
+    padding: 15px 20px;
+}
+
+.example-nav ul {
+    border-left: 3px solid #eee;
+    border-right: 3px solid #eee;
+    border-bottom: 3px solid #eee;
+    margin: 0;
+    padding: 10px 0;
+}
+
+.example-nav li {
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.6;
+    list-style: none;
+    padding: 5px 0 5px 15px;
+}
+
+.example-nav a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.example-nav li:hover {
+    color: #222;
+}
+
+.boardContainer h3 {
+    margin-bottom: 20px;
+}
+
+.prettyprint {
+    min-width: 500px;
+    margin-left: 30px;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px;
+    border: 2px solid grey;
+}
+
+#board1, #board2, #board3 {
+    display: inline-block;
+    margin-right: 5pt;
+}
+
+.container {
+    margin-bottom: 50px;
+}
+
+#size {
+    margin-left: 20px;
+}

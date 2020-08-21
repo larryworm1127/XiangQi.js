@@ -1,5 +1,23 @@
 'use strict';
 
+// Website control
+const $ = window.jQuery;
+
+function clickGroupHeader() {
+  const groupIdx = $(this).attr('id').replace('groupHeader-', '');
+  const $examplesList = $('#groupContainer-' + groupIdx);
+  if ($examplesList.css('display') === 'none') {
+    $examplesList.slideDown('fast');
+  } else {
+    $examplesList.slideUp('fast');
+  }
+}
+
+function init() {
+  const $examplesNav = $('#examplesNav');
+  $examplesNav.on('click', 'h4', clickGroupHeader);
+}
+
 
 // Board demo functions
 const emptyBoard = function () {
@@ -11,35 +29,69 @@ const fullBoardStart = function () {
 };
 
 const midGameBoard = function () {
-  const midGameFen = '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9'
+  const midGameFen = '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9';
   const board = new XiangQi({ containerId: 'midGameBoard', boardContent: midGameFen });
 };
 
-const interactiveBoard = function () {
-  const board = new XiangQi({ containerId: 'buttonControlBoard', delayDraw: true });
-  const drawBoardButton = document.getElementById('drawBoard');
-  const drawStartPosButton = document.getElementById('drawStartPos');
-  const clearBoardButton = document.getElementById('clearBoard');
+const multiBoard = function () {
+  const board1 = new XiangQi({
+    boardSize: '350',
+    containerId: 'board1',
+    boardContent: 'start'
+  });
+  const board2 = new XiangQi({
+    boardSize: '350',
+    containerId: 'board2',
+    boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9'
+  });
+};
 
-  drawBoardButton.onclick = () => {
-    board.drawBoard();
-    drawBoardButton.setAttribute('disabled', 'true');
-    drawStartPosButton.removeAttribute('disabled');
-  };
+const showSideBarBoard = function () {
+  const board = new XiangQi({
+    containerId: 'showSideBar',
+    boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9',
+    showSideBar: true
+  });
+};
 
-  drawStartPosButton.onclick = () => {
-    board.drawStartPositions();
-    drawStartPosButton.setAttribute('disabled', 'true');
-  };
+const draggableBoard = function () {
+  const board = new XiangQi({
+    containerId: 'draggable',
+    boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9',
+    draggable: true
+  });
+};
 
-  clearBoardButton.onclick = () => {
-    board.clearBoard();
-    drawStartPosButton.removeAttribute('disabled');
-  };
+const clickableBoard = function () {
+  const board = new XiangQi({
+    containerId: 'clickable',
+    boardContent: 'start',
+    clickable: true
+  });
+};
+
+const clickableVoidBoard = function () {
+  const board = new XiangQi({
+    containerId: 'voidPieces',
+    boardContent: 'start',
+    clickable: true,
+    voidPieces: true
+  });
+};
+
+const flipBoard = function () {
+  const board = new XiangQi({
+    containerId: 'flipBoard',
+    boardContent: 'start',
+  });
+  document.getElementById('flip').addEventListener('click', () => board.flipBoard());
 };
 
 const pieceMoveBoard = function () {
-  const board = new XiangQi({ containerId: 'movePieceBoard', startPos: true });
+  const board = new XiangQi({
+    containerId: 'movePieceBoard',
+    boardContent: 'start'
+  });
   const generator = getMove();
 
   document.getElementById('move').onclick = function () {
@@ -71,7 +123,7 @@ const pieceMoveBoard = function () {
 };
 
 const addRemovePieceBoard = function () {
-  const board = new XiangQi({ containerId: 'addRemoveControlBoard', startPos: true });
+  const board = new XiangQi({ containerId: 'addRemoveControlBoard', boardContent: 'start', reportError: 'console' });
 
   const pieceType = document.getElementById('type');
   const side = document.getElementById('side');
@@ -85,41 +137,48 @@ const addRemovePieceBoard = function () {
 
   addButton.onclick = (e) => {
     e.preventDefault();
-
-    board.drawPiece(addRow.value, addCol.value, pieceType.value, side.value);
+    board.drawPiece(parseInt(addRow.value), parseInt(addCol.value), pieceType.value, side.value);
   };
 
   removeButton.onclick = (e) => {
     e.preventDefault();
-
-    board.removePiece(removeRow.value, removeCol.value);
+    board.removePiece(parseInt(removeRow.value), parseInt(removeCol.value));
   };
 };
 
+const clearDrawBoard = function () {
+  const board = new XiangQi({
+    containerId: 'clearBoard',
+    boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9',
+  });
+  document.getElementById('clear').addEventListener('click', () => board.clearBoard(false));
+  document.getElementById('draw').addEventListener('click', () => board.drawBoardContent());
+};
+
 const largerBoard = function () {
-  const board = new XiangQi({ containerId: 'largeBoard', boardSize: 800, startPos: true });
+  const board = new XiangQi({ containerId: 'largeBoard', boardContent: 'start' });
+  document.getElementById('slider').addEventListener('change', event => {
+    board.resizeBoard(parseInt(event.target.value));
+    document.getElementById('size').textContent = `Size: ${event.target.value}px`
+  });
 };
 
 
 document.addEventListener('DOMContentLoaded', function () {
+  init();
+
   // Create empty board
   emptyBoard();
-
-  // Create full start board
   fullBoardStart();
-
-  // Create mid game board
   midGameBoard();
-
-  // Create larger size board
-  largerBoard();
-
-  // Create board controlled by buttons
-  interactiveBoard();
-
-  // Create board that adds and remove pieces
-  addRemovePieceBoard();
-
-  // Create board with piece movements
+  multiBoard();
+  showSideBarBoard();
+  draggableBoard();
+  clickableBoard();
+  clickableVoidBoard();
+  flipBoard();
   pieceMoveBoard();
+  clearDrawBoard();
+  largerBoard();
+  addRemovePieceBoard();
 });

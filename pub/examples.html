@@ -5,16 +5,17 @@
     <title>XiangQi.js Demo</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="vendor/css/bootstrap.css" rel="stylesheet">
+    <link href="vendor/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
             integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
             crossorigin="anonymous"></script>
     <script src="vendor/js/popper.min.js"></script>
     <script src="vendor/js/bootstrap.min.js"></script>
-
+    <script src="vendor/js/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?skin=desert"></script>
 
     <link rel="stylesheet" href="../lib/xiangqi.css">
-    <link rel="stylesheet" href="examples.css">
+    <link rel="stylesheet" href="css/examples.css">
     <script defer type="text/javascript" src="../lib/xiangqi.js"></script>
     <script defer type="text/javascript" src="examples.js"></script>
   </head>
@@ -44,81 +45,438 @@
     </header>
 
     <main>
-      <div id="emptyBoard" class="boardContainer">
-        <p>
-          An empty XiangQi board.
-        </p>
-      </div>
+      <div class="container">
+        <div class="row">
+          <div class="col-3">
+            <nav class="example-nav" id="examplesNav">
+              <h4 id="groupHeader-1">Basic Usage</h4>
+              <ul id="groupContainer-1" class="group-container">
+                <li><a href="#emptyBoard">Empty Board</a></li>
+                <li><a href="#fullBoardStart">Start Position</a></li>
+                <li><a href="#midGameBoard">FEN String</a></li>
+                <li><a href="#multipleBoard">Multiple Boards</a></li>
+              </ul>
+              <h4 id="groupHeader-2">Config</h4>
+              <ul id="groupContainer-2" class="group-container">
+                <li><a href="#showSideBar">Show Side Bar</a></li>
+                <li><a href="#draggable">Draggable</a></li>
+                <li><a href="#clickable">Clickable</a></li>
+                <li><a href="#voidPieces">Void Pieces</a></li>
+              </ul>
+              <h4 id="groupHeader-3">Methods</h4>
+              <ul id="groupContainer-3" class="group-container">
+                <li><a href="#flipBoard">Flip Board</a></li>
+                <li><a href="#movePieceBoard">Move Piece</a></li>
+                <li><a href="#addRemoveControlBoard">Add / Remove Piece</a></li>
+                <li><a href="#clearBoard">Clear / Draw Board</a></li>
+                <li><a href="#largeBoard">Resize</a></li>
+              </ul>
+            </nav>
+          </div>
 
-      <div id="fullBoardStart" class="boardContainer">
-        <p>
-          A full board with pieces in start positions
-        </p>
-      </div>
+          <div class="col-9">
+            <div class="row">
+              <div id="emptyBoard" class="boardContainer">
+                <h3>
+                  Empty Board
+                </h3>
+                <p>
+                  XiangQi.js can initialize an empty XiangQi board with just a containerId property in config.
+                </p>
+              </div>
 
-      <div id="midGameBoard" class="boardContainer">
-        <p>
-          A XiangQi board with use-defined board content.
-        </p>
-      </div>
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
 
-      <div id="movePieceBoard" class="boardContainer">
-        <div>
-          <p>
-            Move objects allow user to define a chain of moves to be displayed sequentially.
-            <br/>
-            Below is a few moves from a famous XiangQi opening.
-          </p>
-          <button type="button" id="move">Move</button>
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board'
+});
+              </pre>
+            </div>
+
+            <hr>
+
+            <div class="row">
+              <div id="fullBoardStart" class="boardContainer">
+                <h3>
+                  Start Positions
+                </h3>
+                <p>
+                  Full start position can be displayed by passing in <code>'start'</code> for boardContent field
+                </p>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: 'start'
+});
+              </pre>
+            </div>
+
+            <hr>
+
+            <div class="row">
+              <div id="midGameBoard" class="boardContainer">
+                <h3>
+                  FEN String Defined Board
+                </h3>
+                <p>
+                  A XiangQi board with use-defined board content.
+                </p>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9'
+});
+              </pre>
+            </div>
+
+            <hr>
+
+            <div class="row">
+              <div id="multipleBoard" class="boardContainer">
+                <h3>
+                  Multiple Boards
+                </h3>
+
+                <div id="board1"></div>
+                <div id="board2"></div>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board1"&gt;&lt;/div&gt;
+&lt;div id="board2"&gt;&lt;/div&gt;
+
+// JavaScript
+const board1 = new XiangQi({
+  containerId: 'board1',
+  boardContent: 'start',
+  boardSize: 350
+});
+const board2 = new XiangQi({
+  containerId: 'board2',
+  boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9',
+  boardSize: 350
+});
+
+// CSS
+#board1, #board2 {
+    display: inline-block;
+    margin-right: 5pt;
+}
+              </pre>
+            </div>
+
+            <hr>
+
+            <div class="row">
+              <div id="showSideBar" class="boardContainer">
+                <h3>
+                  Show Side Bar Config
+                </h3>
+                <p>
+                  Side bar showing piece count of current board can be displayed using
+                  <code>showSideBar: true</code> in config.
+                </p>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9',
+  showSideBar: true
+});
+              </pre>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+              <div id="draggable" class="boardContainer">
+                <h3>
+                  Draggable Config
+                </h3>
+                <p>
+                  Board pieces can be dragged and dropped around the board by setting
+                  <code>draggable: true</code> in config.
+                </p>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9',
+  draggable: true
+});
+              </pre>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+              <div id="clickable" class="boardContainer">
+                <h3>
+                  Clickable Config
+                </h3>
+                <p>
+                  Board pieces can be clicked, which will highlight the piece itself
+                  and its possible moves. The moves can be clicked to move the piece
+                  to that location. This can be enabled by setting
+                  <code>clickable: true</code> in config.
+                </p>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: 'start',
+  clickable: true
+});
+              </pre>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+              <div id="voidPieces" class="boardContainer">
+                <h3>
+                  Void Pieces Config
+                </h3>
+                <p>
+                  Setting <code>voidPieces: true</code> will allow clickable pieces to
+                  highlight moves that can void non-friendly pieces.
+                </p>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: 'start',
+  clickable: true,
+  voidPieces: true
+});
+              </pre>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+              <div id="flipBoard" class="boardContainer">
+                <h3>Flip Board</h3>
+                <p>
+                  The orientation of the XiangQi board can be flipped by calling
+                  <code>flipBoard()</code> API function.
+                </p>
+                <p>
+                  <button type="button" id="flip" class="btn btn-primary">Flip</button>
+                </p>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+&lt;button type="button" id="flip"&gt;Flip&lt;/button&gt;
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: 'start',
+});
+document.getElementById('flip').addEventListener('click', () => board.flipBoard());
+              </pre>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+              <div id="movePieceBoard" class="boardContainer">
+                <h3>Move Piece</h3>
+                <p>
+                  Move objects allow user to define a chain of moves to be displayed sequentially.
+                  Each move can be executed using <code>movePiece()</code> API function
+                  Below is a few moves from a famous XiangQi opening.
+                </p>
+                <p>
+                  <button type="button" id="move" class="btn btn-primary">Move</button>
+                </p>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+&lt;button type="button" id="move"&gt;Move&lt;/button&gt;
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: 'start'
+});
+
+const generator = getMove();  // getMove() is a generator that produces move objects
+document.getElementById('move').onclick = function () {
+  const nextMove = generator.next();
+  if (!nextMove.done) {
+    board.movePiece(nextMove.value);
+  } else {
+    document.getElementById('move').setAttribute('disabled', 'true');
+  }
+};
+              </pre>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+              <div id="addRemoveControlBoard" class="boardContainer">
+                <h3>
+                  Add Pieces / Remove Pieces
+                </h3>
+                <p>
+                  User can add single piece at a time, as well as remove specific piece from board.
+                  <br/>
+                  Note: below input fields expects valid inputs, otherwise error will be thrown.
+                </p>
+                <div>
+                  <form>
+                    <input type="text" id="type" class="form-control" placeholder="Piece Type (i.e. Chariot, Horse)">
+                    <input type="text" id="side" class="form-control" placeholder="Side (i.e. r, b)">
+                    <input type="number" id="addRow" class="form-control" placeholder="Row (0 to 9)">
+                    <input type="number" id="addCol" class="form-control" placeholder="Column (0 to 8)">
+                    <button id="addPiece" class="btn btn-primary">Add Piece</button>
+                  </form>
+                  <br/>
+
+                  <form>
+                    <input type="number" id="removeRow" class="form-control" placeholder="Row (0 to 9)">
+                    <input type="number" id="removeCol" class="form-control" placeholder="Column (0 to 8)">
+                    <button id="removePiece" class="btn btn-primary">Remove Piece</button>
+                  </form>
+                </div>
+                <br/>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+&lt;button type="button" id="addButton"&gt;Add Piece&lt;/button&gt;
+&lt;button type="button" id="removeButton"&gt;Remove Piece&lt;/button&gt;
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: 'start'
+});
+
+// addRow, addCol, pieceType, side, removeRow, removeCol are all input fields
+addButton.onclick = (e) => {
+  e.preventDefault();
+  board.drawPiece(parseInt(addRow.value), parseInt(addCol.value), pieceType.value, side.value);
+};
+
+removeButton.onclick = (e) => {
+  e.preventDefault();
+  board.removePiece(parseInt(removeRow.value), parseInt(removeCol.value));
+};
+              </pre>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+              <div id="clearBoard" class="boardContainer">
+                <h3>Clear / Draw Board</h3>
+                <p>
+                  Board content can be cleared using <code>clearBoard()</code> function, and if user
+                  wishes to retain current board state after clear, simply pass in <code>false</code> as
+                  argument for clear function.
+                  The stored board content can be drawn back using <code>drawBoardContent()</code>.
+                  If user wish to override current board content, then they can pass their own board content
+                  into <code>drawBoardContent()</code> or call <code>drawStartPositions()</code> to draw
+                  out start position.
+                </p>
+                <p>
+                  <button type="button" class="btn btn-primary" id="clear">Clear Board</button>
+                  <button type="button" class="btn btn-primary" id="draw">Draw Board</button>
+                </p>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+&lt;button type="button" id="clear"&gt;Clear Board&lt;/button&gt;
+&lt;button type="button" id="draw"&gt;Draw Board&lt;/button&gt;
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9'
+});
+document.getElementById('clear').addEventListener('click', () => board.clearBoard(false))
+document.getElementById('draw').addEventListener('click', () => board.drawBoardContent())
+              </pre>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+              <div id="largeBoard" class="boardContainer">
+                <h3>
+                  Resize
+                </h3>
+                <p>
+                  The size of the board can be dynamically changed using <code>resizeBoard()</code>
+                  API function.
+                </p>
+                <p>
+                  <input type="range" min="250" max="750" id="slider">
+                  <span id="size">Size: 400px</span>
+                </p>
+              </div>
+
+              <pre class="prettyprint">
+// HTML
+&lt;div id="board"&gt;&lt;/div&gt;
+&lt;input type="range" min="250" max="750" id="slider"&gt;
+
+// JavaScript
+const board = new XiangQi({ containerId: 'board', boardContent: 'start' });
+document.getElementById('slider').addEventListener('change', event => {
+  board.resizeBoard(parseInt(event.target.value));
+});
+              </pre>
+            </div>
+          </div>
         </div>
-        <br/>
-      </div>
-
-      <div id="addRemoveControlBoard" class="boardContainer">
-        <div>
-          <p>
-            Developer can add single piece at a time, as well as remove specific piece from board.
-            <br/>
-            Note: below input fields expects valid inputs, otherwise error will be thrown.
-          </p>
-
-          <form>
-            <input type="text" id="type" placeholder="Piece Type (i.e. Chariot, Horse)">
-            <input type="text" id="side" placeholder="Side (i.e. r, b)">
-            <br/>
-            <input type="number" id="addRow" placeholder="Row (0 to 9)">
-            <input type="number" id="addCol" placeholder="Column (0 to 8)">
-            <br/>
-            <button id="addPiece">Add Piece</button>
-          </form>
-          <br/>
-
-          <form>
-            <input type="number" id="removeRow" placeholder="Row (0 to 9)">
-            <input type="number" id="removeCol" placeholder="Column (0 to 8)">
-            <br/>
-            <button id="removePiece">Remove Piece</button>
-          </form>
-        </div>
-        <br/>
-      </div>
-
-      <div id="buttonControlBoard" class="boardContainer">
-        <div>
-          <p>
-            Developer can choose to delay drawing of the board
-          </p>
-          <button type="button" id="drawBoard">Draw Empty Board</button>
-          <button type="button" id="drawStartPos" disabled>Draw Start Position</button>
-          <button type="button" id="clearBoard">Clear Board</button>
-        </div>
-        <br/>
-      </div>
-
-      <div id="largeBoard">
-        <p>
-          A larger (800px) XiangQi board.
-        </p>
       </div>
     </main>
   </body>
