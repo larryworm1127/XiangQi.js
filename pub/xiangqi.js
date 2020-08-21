@@ -25,7 +25,10 @@
     invalidMoveString: 'Invalid move string passed to the function!',
     invalidFormat: 'Invalid config format!',
     invalidConfig: 'Invalid config fields!',
-    invalidFen: 'Invalid FEN string!'
+    invalidFen: 'Invalid FEN string!',
+    invalidArgType: 'Invalid function argument type!',
+    boardSizeTooSmall: 'Board size too small! (min: 200px)',
+    invalidPosition: 'Invalid (row, column)! (0 <= row < 10, 0 <= column < 9)'
   };
   const PIECE_PATH = 'assets/pieces/';
 
@@ -638,6 +641,16 @@
      * @param newWidth {number} The new width for the board
      */
     resizeBoard: function (newWidth) {
+      if (typeof newWidth !== 'number') {
+        _reportError(ERRORS.invalidArgType, this.config.reportError);
+        return;
+      }
+
+      if (newWidth <= 200) {
+        _reportError(ERRORS.boardSizeTooSmall, this.config.reportError);
+        return;
+      }
+
       const ratio = newWidth / 400;
       this.boardWidth = newWidth;
       this.boardHeight = _getBoardHeight(newWidth);
@@ -695,6 +708,11 @@
     },
 
     clearBoard: function (clearVirtual = true) {
+      if (typeof clearVirtual !== 'boolean') {
+        _reportError(ERRORS.invalidArgType, this.config.reportError);
+        return;
+      }
+
       this.boardSquares.forEach((row, rowIndex) => {
         row.forEach((_, colIndex) => {
           _removePieceDOM(this, rowIndex, colIndex);
@@ -708,10 +726,35 @@
     },
 
     drawPiece: function (row, col, piece, side) {
+      if (typeof row !== 'number' || typeof col !== 'number') {
+        _reportError(ERRORS.invalidArgType, this.config.reportError);
+        return;
+      }
+
+      if (typeof piece !== 'string' || typeof side !== 'string') {
+        _reportError(ERRORS.invalidArgType, this.config.reportError);
+        return;
+      }
+
+      if (row >= NUM_ROWS || col >= NUM_COLS) {
+        _reportError(ERRORS.invalidPosition, this.config.reportError);
+        return;
+      }
+
       _drawPieceDOM(this, row, col, piece, side);
     },
 
     removePiece: function (row, col) {
+      if (typeof row !== 'number' || typeof col !== 'number') {
+        _reportError(ERRORS.invalidArgType, this.config.reportError);
+        return;
+      }
+
+      if (row >= NUM_ROWS || col >= NUM_COLS) {
+        _reportError(ERRORS.invalidPosition, this.config.reportError);
+        return;
+      }
+
       _removePieceDOM(this, row, col);
       this.board.removePiece(row, col);
     },
@@ -1156,7 +1199,7 @@
 
     // Validate config values
     return (
-      ('boardSize' in config && typeof config['boardSize'] !== 'number') ||
+      ('boardSize' in config && typeof config['boardSize'] !== 'number' && config['boardSize'] >= 200) ||
       ('containerId' in config && document.getElementById(config['containerId']) === null) ||
       ('boardContent' in config && (
         config['boardContent'] !== 'start' &&
