@@ -18,6 +18,15 @@
     highlightSquare: 'highlight-square',
     highlightSquareMove: 'highlight-square-move'
   };
+  const ERRORS = {
+    invalidBoardHeight: 'Invalid board content height! (10 rows)',
+    invalidBoardWidth: 'Invalid board content width! (10 columns)',
+    invalidSquareData: 'Invalid board square data! (requires { type: *, side: *})',
+    invalidMoveString: 'Invalid move string passed to the function!',
+    invalidFormat: 'Invalid config format!',
+    invalidConfig: 'Invalid config fields!',
+    invalidFen: 'Invalid FEN string!'
+  };
   const PIECE_PATH = 'assets/pieces/';
 
   // Enums
@@ -573,8 +582,12 @@
   // ----------------------------------------------------------------------
   function XiangQi(initialConfig) {
     this.config = _buildConfig(initialConfig);
-    this.board = new Board(this.config);
+    if (typeof this.config === 'string') {
+      _reportError(this.config, 'alert');
+      return;
+    }
 
+    this.board = new Board(this.config);
     this.containerElement = this.config.container;
     this.boardDiv = null;
     this.sideBarDiv = null;
@@ -642,7 +655,12 @@
      */
     movePiece: function (moveString) {
       const move = moveStringToObj(moveString);
-      if (move && this.board.move(move)) {
+      if (typeof move === 'string') {
+        _reportError(move, this.config.reportError);
+        return;
+      }
+
+      if (this.board.move(move)) {
         this.clearBoard(false);
         this.drawBoardContent();
 
@@ -658,18 +676,22 @@
     },
 
     drawBoardContent: function (boardContent = null) {
-      const content = (boardContent) ?
+      const content = validateBoardContent((boardContent) ?
         (typeof boardContent === 'string') ? parseFenString(boardContent) : boardContent
-        : this.board.boardContent;
-      if (_validateBoardContent(content)) {
-        content.forEach((row, rowIndex) => {
-          row.forEach((square, colIndex) => {
-            if (square.type !== PIECES.empty) {
-              _drawPieceDOM(this, rowIndex, colIndex, square.type, square.side);
-            }
-          });
-        });
+        : this.board.boardContent);
+
+      if (typeof content === 'string') {
+        _reportError(content, this.config.reportError);
+        return;
       }
+
+      content.forEach((row, rowIndex) => {
+        row.forEach((square, colIndex) => {
+          if (square.type !== PIECES.empty) {
+            _drawPieceDOM(this, rowIndex, colIndex, square.type, square.side);
+          }
+        });
+      });
     },
 
     clearBoard: function (clearVirtual = true) {
@@ -806,6 +828,7 @@
     XiangQi.containerElement.appendChild(XiangQi.boardDiv);
   }
 
+
   function _resizeBoardDOM(XiangQi) {
     XiangQi.boardDiv.style.width = `${XiangQi.boardWidth}px`;
     XiangQi.boardDiv.style.height = `${XiangQi.boardHeight}px`;
@@ -822,6 +845,7 @@
     });
   }
 
+
   function _drawPieceDOM(XiangQi, row, col, piece, side) {
     if (!XiangQi.boardSquares[row][col].firstChild) {
       const pieceElement = document.createElement('img');
@@ -832,6 +856,7 @@
       XiangQi.boardSquares[row][col].appendChild(pieceElement);
     }
   }
+
 
   function _drawSideBarDOM(XiangQi) {
     // Create sidebar container
@@ -872,6 +897,7 @@
     XiangQi.containerElement.appendChild(XiangQi.sideBarDiv);
   }
 
+
   function _resizeSideBarDOM(XiangQi, ratio) {
     const title = XiangQi.sideBarDiv.children.item(0);
     title.style.fontSize = `${100 * ratio}%`;
@@ -892,6 +918,7 @@
     }
   }
 
+
   function _updateSideBarDOM(XiangQi) {
     const pieceCount = XiangQi.board.getPieceCounts();
 
@@ -906,6 +933,7 @@
     });
   }
 
+
   function _removePieceDOM(XiangQi, row, col) {
     const square = XiangQi.boardSquares[row][col];
     while (square.firstChild) {
@@ -913,9 +941,11 @@
     }
   }
 
+
   function _removeBoardDOM(XiangQi) {
     XiangQi.containerElement.removeChild(XiangQi.boardDiv);
   }
+
 
   function _removeSidebarDOM(XiangQi) {
     XiangQi.containerElement.removeChild(XiangQi.sideBarDiv);
@@ -983,6 +1013,7 @@
     };
   }
 
+
   function _mouseUpDragHandler(piece, _mouseMoveDragHandler, currentSquare, lastSquare) {
     // Clear mousemove handlers
     document.removeEventListener('mousemove', _mouseMoveDragHandler);
@@ -998,6 +1029,7 @@
     piece.style.position = 'static';
     piece.style.zIndex = '0';
   }
+
 
   function _squareOnClickHandler(XiangQi, row, col) {
     // Remove previous highlight
@@ -1039,6 +1071,7 @@
     }
   }
 
+
   function _squareOnClickMoveHandler(XiangQi, row, col) {
     // Remove piece from old square
     const currSquare = XiangQi.board.selectedSquare;
@@ -1072,6 +1105,7 @@
     }
   }
 
+
   // centers the ball at (pageX, pageY) coordinates
   function _moveAt(pageX, pageY, shiftX, shiftY, piece) {
     piece.style.left = `${pageX - shiftX}px`;
@@ -1095,19 +1129,66 @@
   // ----------------------------------------------------------------------
   // Utility functions (private)
   // ----------------------------------------------------------------------
-  function _buildConfig(inputConfig) {
-    const config = (inputConfig === undefined) ? {} : inputConfig;
-    return {
-      boardSize: ('boardSize' in config) ? config['boardSize'] : 400,
-      container: ('containerId' in config) ? document.getElementById(config['containerId']) : document.body,
-      boardContent: ('boardContent' in config) ? config['boardContent'] : [],
-      showSideBar: ('showSideBar' in config) ? config['showSideBar'] : false,
-      draggable: ('draggable' in config) ? config['draggable'] : false,
-      delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
-      redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
-      clickable: ('clickable' in config) ? config['clickable'] : false,
-      voidPieces: ('voidPieces' in config) ? config['voidPieces'] : false
-    };
+  /**
+   * Validates config value and build new config object.
+   *
+   * @param config {Object | undefined} input initial config.
+   * @return {Object | string} parsed config object or the error if invalid input config
+   * @private
+   */
+  function _buildConfig(config) {
+    if (config === undefined || config === null) {
+      return {
+        boardSize: 400,
+        container: document.body,
+        boardContent: [],
+        showSideBar: false,
+        draggable: false,
+        delayDraw: false,
+        redOnBottom: false,
+        clickable: false,
+        voidPieces: false,
+        reportError: false
+      };
+    } else if (typeof config !== 'object') {
+      return ERRORS.invalidFormat;
+    }
+
+    // Validate config values
+    return (
+      ('boardSize' in config && typeof config['boardSize'] !== 'number') ||
+      ('containerId' in config && document.getElementById(config['containerId']) === null) ||
+      ('boardContent' in config && (
+        config['boardContent'] !== 'start' &&
+        validateBoardContent(config['boardContent']) !== true &&
+        (typeof config['boardContent'] !== 'string' |
+          !Array.isArray(parseFenString(config['boardContent'])))
+      )) ||
+      ('showSideBar' in config && typeof config['showSideBar'] !== 'boolean') ||
+      ('draggable' in config && typeof config['draggable'] !== 'boolean') ||
+      ('delayDraw' in config && typeof config['delayDraw'] !== 'boolean') ||
+      ('redOnBottom' in config && typeof config['redOnBottom'] !== 'boolean') ||
+      ('clickable' in config && typeof config['clickable'] !== 'boolean') ||
+      ('voidPieces' in config && typeof config['voidPieces'] !== 'boolean') ||
+      ('reportError' in config && (
+        config['reportError'] !== false &&
+        config['reportError'] !== 'console' &&
+        config['reportError'] !== 'alert'
+      ))
+    )
+      ? ERRORS.invalidConfig
+      : {
+        boardSize: ('boardSize' in config) ? config['boardSize'] : 400,
+        container: ('containerId' in config) ? document.getElementById(config['containerId']) : document.body,
+        boardContent: ('boardContent' in config) ? config['boardContent'] : [],
+        showSideBar: ('showSideBar' in config) ? config['showSideBar'] : false,
+        draggable: ('draggable' in config) ? config['draggable'] : false,
+        delayDraw: ('delayDraw' in config) ? config['delayDraw'] : false,
+        redOnBottom: ('redOnBottom' in config) ? config['redOnBottom'] : false,
+        clickable: ('clickable' in config) ? config['clickable'] : false,
+        voidPieces: ('voidPieces' in config) ? config['voidPieces'] : false,
+        reportError: ('reportError' in config) ? config['reportError'] : false
+      };
   }
 
 
@@ -1120,30 +1201,45 @@
     return (boardWidth - 2) / NUM_COLS;
   }
 
+  function _reportError(message, reportErrorConfig) {
+    switch (reportErrorConfig) {
+      case 'console':
+        console.log(message);
+        break;
+      case 'alert':
+        global.alert(message);
+        break;
+      default:
+        return;
+    }
+  }
 
+
+  // ----------------------------------------------------------------------
+  // Utility functions (public)
+  // ----------------------------------------------------------------------
   /**
    * Validate whether the given boardContent is valid or not.
    *
    * @param boardContent {Array[][]} the board content to be validated.
-   * @return {boolean} true for valid and false for invalid board content.
+   * @return {boolean | string} true for valid and false for invalid board content.
    */
-  function _validateBoardContent(boardContent) {
+  function validateBoardContent(boardContent) {
     if (boardContent.length !== 10) {
-      return false;
+      return ERRORS.invalidBoardHeight;
     }
 
     for (const row in boardContent) {
       if (boardContent[row].length !== 9) {
-        return false;
+        return ERRORS.invalidBoardWidth;
       }
       for (const col in boardContent[row]) {
         const square = boardContent[row][col];
-        if (Object.values(PIECES).filter(item => item === square.type).length === 0) {
-          return false;
-        }
-
-        if (square.type !== PIECES.empty && (square.side !== SIDES.red && square.side !== SIDES.black)) {
-          return false;
+        if (
+          (Object.values(PIECES).filter(item => item === square.type).length === 0) ||
+          (square.type !== PIECES.empty && (square.side !== SIDES.red && square.side !== SIDES.black))
+        ) {
+          return ERRORS.invalidSquareData;
         }
       }
     }
@@ -1155,19 +1251,19 @@
    * Parses a XiangQi move string into a computer readable Move object.
    *
    * @param moveString {string} A move string in form of `[former rank][former file]-[new rank][new file]`
-   * @return {{oldPos: *, newPos: *} | boolean} The corresponding Move object.
+   * @return {{oldPos: *, newPos: *} | string} The corresponding Move object.
    */
   function moveStringToObj(moveString) {
     // Validate moveString
     if (moveString.length !== 5) {
-      return false;
+      return ERRORS.invalidMoveString;
     }
 
     const split = moveString.split('-');
     const oldPos = split[0].split('');
     const newPos = split[1].split('');
     if (isNaN(parseInt(split[0])) || isNaN(parseInt(split[1]))) {
-      return false;
+      return ERRORS.invalidMoveString;
     }
 
     // Build move object
@@ -1182,12 +1278,15 @@
    * Parses a FEN string for a board state into a computer readable 2D-array of Piece objects.
    *
    * @param fenString {String} the input FEN string.
-   * @returns {Array[][]} the parsed board content as a 2D-array of Piece objects.
+   * @returns {Array[][] | String} the parsed board content as a 2D-array of Piece objects.
    */
   function parseFenString(fenString) {
     const split = fenString.split('/');
+    if (split.length !== 10) {
+      return ERRORS.invalidFen;
+    }
 
-    return split.map((row) => {
+    const result = split.map((row) => {
       const rowSplit = row.split('');
       return rowSplit.flatMap((char) => {
         if (!isNaN(parseInt(char))) {
@@ -1200,6 +1299,11 @@
         return Piece(ABBREVIATION[char.toUpperCase()], SIDES.black);
       });
     });
+
+    if (validateBoardContent(result) !== true) {
+      return ERRORS.invalidFen;
+    }
+    return result;
   }
 
 
@@ -1239,6 +1343,10 @@
   global.XiangQi = global.XiangQi || XiangQi;
   global.parseFenString = global.parseFenString || parseFenString;
   global.getFenString = global.getFenString || getFenString;
+  global.validateBoardContent = global.validateBoardContent || validateBoardContent;
+  global.Piece = global.Piece || Piece;
+  global.Move = global.Move || Move;
+  global.Position = global.Position || Position;
 
 })(window);
 
