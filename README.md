@@ -25,6 +25,82 @@ Read the API Doc to see various configurations and API
 functions that XiangQi.js provides, or read examples page to see sample of API usage.
 
 
+## Basic Usage
+
+#### Empty Board
+
+XiangQi.js can initialize an empty XiangQi board with just a containerId property in config.
+
+```jsx
+// HTML
+<div id="board"></div>
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board'
+});
+```
+
+#### Start Position
+
+Full start position can be displayed by passing in `'start'` for boardContent field
+
+```jsx
+// HTML
+<div id="board"></div>
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: 'start'
+});
+```
+
+#### FEN String Defined Board
+
+A XiangQi board with use-defined board content.
+
+```jsx
+// HTML
+<div id="board"></div>
+
+// JavaScript
+const board = new XiangQi({
+  containerId: 'board',
+  boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9'
+});
+```
+
+#### Multiple Boards
+
+Multiple XiangQi boards can be embedded at the same time by creating
+multiple instances of XiangQi.
+
+```jsx
+// HTML
+<div id="board1"></div>
+<div id="board2"></div>
+
+// JavaScript
+const board1 = new XiangQi({
+  containerId: 'board1',
+  boardContent: 'start',
+  boardSize: 350
+});
+const board2 = new XiangQi({
+  containerId: 'board2',
+  boardContent: '1r2g4/9/1h2ea3/4s4/1R3S3/7H1/s3C2cr/3A5/4G4/9',
+  boardSize: 350
+});
+```
+
+```css
+#board1, #board2 {
+    display: inline-block;
+    margin-right: 5pt;
+}
+```
+
 ## Documentation
 
 - Here is link to API Doc: https://xiangqijs.herokuapp.com/apis.html
