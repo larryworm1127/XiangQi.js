@@ -1,0 +1,95 @@
+<svg version="1.1"
+     viewBox="0 0 900 1000"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <!-- ========================================================= -->
+  <!-- Board base -->
+  <!-- ========================================================= -->
+  <rect width="900" height="1000" fill="#b35900"/>
+  <rect x="44" y="44" width="812" height="912" stroke="#000" stroke-width="4" fill="#b35900"/>
+  <rect x="50" y="50" width="800" height="900" stroke="#000" stroke-width="4" fill="#cc9900"/>
+
+  <!-- ========================================================= -->
+  <!-- Board other lines -->
+  <!-- ========================================================= -->
+  <defs>
+    <g id="cross">
+      <line x1="300" y1="0" x2="500" y2="200" stroke="#000" stroke-width="4"/>
+      <line x1="300" y1="200" x2="500" y2="0" stroke="#000" stroke-width="4"/>
+    </g>
+
+    <g id="rightAngleLineHalfRight">
+      <polygon points="8,38 12,38 12,12 38,12 38,8 8,8"/>
+      <polygon points="8,-38 12,-38 12,-12 38,-12 38,-8 8,-8"/>
+    </g>
+
+    <g id="rightAngleLineHalfLeft">
+      <polygon points="-8,38 -12,38 -12,12 -38,12 -38,8 -8,8"/>
+      <polygon points="-8,-38 -12,-38 -12,-12 -38,-12 -38,-8 -8,-8"/>
+    </g>
+
+    <g id="rightAngleLineFull">
+      <use href="#rightAngleLineHalfRight" width="100%" height="100%"/>
+      <use href="#rightAngleLineHalfLeft" width="100%" height="100%"/>
+    </g>
+  </defs>
+
+  <!-- ========================================================= -->
+  <!-- Board squares -->
+  <!-- ========================================================= -->
+  <defs>
+    <rect id="square" 
+          width="100" 
+          height="100" 
+          stroke="#000" 
+          stroke-width="4" 
+          fill="#cc9900"/>
+
+    <g id="row">
+      <use href="#square" x="0" width="100%" height="100%"/>
+      <use href="#square" x="100" width="100%" height="100%"/>
+      <use href="#square" x="200" width="100%" height="100%"/>
+      <use href="#square" x="300" width="100%" height="100%"/>
+      <use href="#square" x="400" width="100%" height="100%"/>
+      <use href="#square" x="500" width="100%" height="100%"/>
+      <use href="#square" x="600" width="100%" height="100%"/>
+      <use href="#square" x="700" width="100%" height="100%"/>
+    </g>
+
+    <g id="half">
+      <!-- 4 rows -->
+      <use href="#row" y="0" width="100%" height="100%"/>
+      <use href="#row" y="100" width="100%" height="100%"/>
+      <use href="#row" y="200" width="100%" height="100%"/>
+      <use href="#row" y="300" width="100%" height="100%"/>
+
+      <!-- 2 cross lines in center -->
+      <use href="#cross" width="100%" height="100%"/>
+
+      <!-- Multiple right angle lines -->
+      <use href="#rightAngleLineHalfRight" x="0" y="300" width="100%" height="100%"/>
+      <use href="#rightAngleLineHalfLeft" x="800" y="300" width="100%" height="100%"/>
+
+      <use href="#rightAngleLineFull" x="100" y="200" width="100%" height="100%"/>
+      <use href="#rightAngleLineFull" x="700" y="200" width="100%" height="100%"/>
+
+      <use href="#rightAngleLineFull" x="200" y="300" width="100%" height="100%"/>
+      <use href="#rightAngleLineFull" x="400" y="300" width="100%" height="100%"/>
+      <use href="#rightAngleLineFull" x="600" y="300" width="100%" height="100%"/>
+    </g>
+  </defs>
+
+  <use href="#half"
+       transform="translate(0,-100)"
+       x="50"
+       y="150"
+       width="100%"
+       height="100%"/>
+  <use href="#half"
+       transform="rotate(180,450,550)"
+       x="50"
+       y="150"
+       width="100%"
+       height="100%"/>
+
+</svg>
