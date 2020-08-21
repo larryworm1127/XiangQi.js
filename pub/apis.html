@@ -43,7 +43,7 @@
           <h1>Documentation</h1>
         </div>
 
-        <div class="row doc-section">
+        <div class="row doc-section" id="config">
           <h3>Initial Config options</h3>
 
           <table class="table table-bordered doc-table">
@@ -83,13 +83,13 @@
               <tr id="boardContentConfig">
                 <th scope="row" class="property-col">boardContent</th>
                 <td class="default-col">[]</td>
-                <td class="type-col">2D-array of objects or <br/> String</td>
+                <td class="type-col">Array[][] | String</td>
                 <td>
-                  The content of the board to be displayed. <br/>
+                  The content of the board to be displayed.
                   Possible values for this properties are:
                   <ul>
-                    <li>2D-array of <code class="snippet">Piece</code> object.</li>
-                    <li>A <a>FEN</a> string</li>
+                    <li>2D-array of <code class="snippet"><a href="#pieceFunc">Piece</a></code> object.</li>
+                    <li>A <a href="#fen">FEN</a> string</li>
                     <li><code class="snippet">'start'</code> to have board in start position</li>
                   </ul>
                 </td>
@@ -185,8 +185,8 @@
 
         <hr>
 
-        <div class="row doc-section">
-          <h3>API Functions</h3>
+        <div class="row doc-section" id="xiangqi-api">
+          <h3>XiangQi API Functions</h3>
 
           <table class="table table-bordered doc-table">
             <thead class="thead-dark">
@@ -240,13 +240,20 @@
               <tr id="movePieceFunc">
                 <th scope="row" class="func-col">movePiece()</th>
                 <td class="args-col">
-                  moveString: String
+                  moveInput: String | Object(Move)
                 </td>
                 <td class="error-col">true</td>
                 <td>
-                  Update the XiangQi board state using given <code class="snippet">&lt;moveString&gt;</code> and
-                  draw out the updated board content. The function will do nothing is
-                  either the <code class="snippet">&lt;moveString&gt;</code> is invalid or if the move is invalid.
+                  Update the XiangQi board state using given <code class="snippet">&lt;moveInput&gt;</code> and
+                  draw out the updated board content. The function will report error if
+                  either the <code class="snippet">&lt;moveInput&gt;</code> is invalid or if the move is invalid.
+                  <br/>
+                  <br/>
+                  <code class="snippet">&lt;moveInput&gt;</code> can be a string in the form of
+                  <code class="snippet">'[old position]-[new position]'</code>, e.g. 23-25, where 2 represent
+                  row of old position, 3 represent column of old position, and so on.
+                  <code class="snippet">&lt;moveInput&gt;</code> can also be a move object in the form
+                  of <code class="snippet"><a href="#moveFunc">{ oldPos: *, newPos: * }</a></code>
                 </td>
               </tr>
               <tr id="drawStartPositionsFunc">
@@ -268,6 +275,12 @@
                   The function will clear the board and draw out current board content.
                   If <code class="snippet">&lt;boardContent&gt;</code> is provided, then the function will update the
                   current board content with given one and draw it out on the XiangQi board.
+                  <br/>
+                  <br/>
+                  <code class="snippet"><a href="#boardContentConfig">&lt;boardContent&gt;</a></code> can either be
+                  a <a href="#fen">FEN string</a> representing the state of the board, or a 2D-array of
+                  <code class="snippet"><a href="#pieceFunc">Piece</a></code> object. Anything else passed in will
+                  result in error.
                 </td>
               </tr>
               <tr id="clearBoardFunc">
@@ -294,7 +307,7 @@
                 <td>
                   Draw out given <code class="snippet">&lt;piece&gt;</code> at position
                   <code class="snippet">(&lt;row&gt;, &lt;col&gt;)</code>.
-                  If the position is already occupied, then the function will do nothing.
+                  If the position is already occupied, then the function will report error.
                 </td>
               </tr>
               <tr id="removePieceFunc">
@@ -306,7 +319,7 @@
                 <td class="error-col">true</td>
                 <td>
                   Remove the piece from position <code class="snippet">(&lt;row&gt;, &lt;col&gt;)</code>.
-                  If the position is empty, then the function will do nothing.
+                  If the position is empty, then the function will report error.
                 </td>
               </tr>
               <tr id="drawSideBarFunc">
@@ -381,6 +394,238 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <hr>
+
+        <div class="row doc-section" id="other-api">
+          <h3>Other API Functions</h3>
+
+          <table class="table table-bordered doc-table">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">Function</th>
+                <th scope="col">Arguments</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="xiangQiFunc">
+                <th scope="row" class="func-col">XiangQi()</th>
+                <td class="args-col">
+                  initialConfig: Object
+                </td>
+                <td>
+                  Create an instance of <code class="snippet">XiangQi</code> object.
+                  The <code class="snippet">initialConfig</code> helps with initial setup of the XiangQi instance,
+                  which is described in detail <a href="#config">here</a>. The API functions for the XiangQi instance
+                  is described in detail <a href="#xiangqi-api">here</a>.
+                </td>
+              </tr>
+              <tr id="parseFenStringFunc">
+                <th scope="row" class="func-col">parseFenString()</th>
+                <td class="args-col">
+                  fenString: String
+                </td>
+                <td>
+                  The function parses the <code class="snippet">fenString</code> (<a href="#fen">FEN string</a>)
+                  into a XiangQi instance readable 2D-array of the board state. This function is intended
+                  to help conversion between FEN and 2D-array for user who prefer to use 2D-array having
+                  a FEN string. This function is the opposite of
+                  <code class="snippet"><a href="#getFenStringFunc">getFenString</a></code>
+                </td>
+              </tr>
+              <tr id="getFenStringFunc">
+                <th scope="row" class="func-col">getFenString()</th>
+                <td class="args-col">
+                  boardContent: Array[][]
+                </td>
+                <td>
+                  The function <code class="snippet">getFenString</code> parses
+                  a XiangQi instance readable 2D-array of the board state into a <a href="#fen">FEN string</a>.
+                  This function is intended to help conversion between FEN and 2D-array for user who prefer to
+                  use FEN string having a 2D-array of the board. It is also intended to help user save board
+                  state (saving FEN string is much easier than 2D-array). This function is the opposite of
+                  <code class="snippet"><a href="#parseFenStringFunc">parseFenString</a></code>
+                </td>
+              </tr>
+              <tr id="validateBoardContentFunc">
+                <th scope="row" class="func-col">validateBoardContent()</th>
+                <td class="args-col">
+                  boardContent: Array[][]
+                </td>
+                <td>
+                  The function <code class="snippet">validateBoardContent</code> validates the
+                  content of <code class="snippet">boardContent</code> to make sure that it is in
+                  the correct form. This function is intended to help user check their boardContent
+                  input before using it in the <a href="#xiangqi-api">API functions</a>.
+                </td>
+              </tr>
+              <tr id="pieceFunc">
+                <th scope="row" class="func-col">Piece()</th>
+                <td class="args-col">
+                  type: String <br/>
+                  side: String
+                </td>
+                <td>
+                  The function <code class="snippet">Piece</code> generates a JavaScript object
+                  in the form <code class="snippet">{ type: *, side: * }</code> to represent a piece
+                  on the XiangQi board. The function is intended to help user build board content using
+                  2D-array.
+                </td>
+              </tr>
+              <tr id="moveFunc">
+                <th scope="row" class="func-col">Move()</th>
+                <td class="args-col">
+                  oldPos: Object(Position)
+                  newPos: Object(Position)
+                </td>
+                <td>
+                  The function <code class="snippet">Move</code> generates a JavaScript object in the form
+                  <code class="snippet">{ oldPos: { row: *, column: * }, newPos: { row: *, column: * } }</code>
+                  to represent a change
+                  of position of a piece on the XiangQi board. The function is intended to help user who prefer
+                  to use objects instead of move strings to build move objects for API function
+                  <code class="snippet"><a href="#movePieceFunc">movePiece()</a></code>.
+                </td>
+              </tr>
+              <tr id="positionFunc">
+                <th scope="row" class="func-col">Position()</th>
+                <td class="args-col">
+                  row: integer <br/>
+                  column: integer
+                </td>
+                <td>
+                  The function <code class="snippet">Move</code> generates a JavaScript object
+                  in the form <code class="snippet">{ row: *, column: * }</code> to represent a position
+                  on the XiangQi board. The function is intended to help user build board content using
+                  2D-array, as well as many other inputs required by various <a href="#xiangqi-api">API functions</a>.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr>
+
+        <div class="row doc-section" id="fen">
+          <h3>FEN String System</h3>
+
+          <p>
+            In order to easily represent, export, and store board states, the XiangQi API implemented
+            various mechanism to accept the
+            <a href="https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation">Forsyth-Edwards Notation (FEN)</a>
+            string system.
+          </p>
+
+          <div class="col-5">
+            <table class="table table-bordered doc-table">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Piece Type</th>
+                  <th scope="col">Piece Image</th>
+                  <th scope="col">Representation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>General</th>
+                  <td style="width: 30%">
+                    <img src="./assets/pieces/rGeneral.svg" alt="red general" width="30%">
+                    <img src="./assets/pieces/bGeneral.svg" alt="black general" width="30%">
+                  </td>
+                  <td>
+                    <strong>G</strong> (red side) <br/>
+                    <strong>g</strong> (black side)
+                  </td>
+                </tr>
+                <tr>
+                  <th>Advisor</th>
+                  <td>
+                    <img src="./assets/pieces/rAdvisor.svg" alt="red" width="30%">
+                    <img src="./assets/pieces/bAdvisor.svg" alt="black" width="30%">
+                  </td>
+                  <td>
+                    <strong>A</strong> (red side) <br/>
+                    <strong>a</strong> (black side)
+                  </td>
+                </tr>
+                <tr>
+                  <th>Elephant</th>
+                  <td>
+                    <img src="./assets/pieces/rElephant.svg" alt="red" width="30%">
+                    <img src="./assets/pieces/bElephant.svg" alt="black" width="30%">
+                  </td>
+                  <td>
+                    <strong>E</strong> (red side) <br/>
+                    <strong>e</strong> (black side)
+                  </td>
+                </tr>
+                <tr>
+                  <th>Horse</th>
+                  <td>
+                    <img src="./assets/pieces/rHorse.svg" alt="red" width="30%">
+                    <img src="./assets/pieces/bHorse.svg" alt="black" width="30%">
+                  </td>
+                  <td>
+                    <strong>H</strong> (red side) <br/>
+                    <strong>h</strong> (black side)
+                  </td>
+                </tr>
+                <tr>
+                  <th>Cannon</th>
+                  <td>
+                    <img src="./assets/pieces/rCannon.svg" alt="red" width="30%">
+                    <img src="./assets/pieces/bCannon.svg" alt="black" width="30%">
+                  </td>
+                  <td>
+                    <strong>C</strong> (red side) <br/>
+                    <strong>c</strong> (black side)
+                  </td>
+                </tr>
+                <tr>
+                  <th>Chariot</th>
+                  <td>
+                    <img src="./assets/pieces/rChariot.svg" alt="red" width="30%">
+                    <img src="./assets/pieces/bChariot.svg" alt="black" width="30%">
+                  </td>
+                  <td>
+                    <strong>R</strong> (red side) <br/>
+                    <strong>r</strong> (black side)
+                  </td>
+                </tr>
+                <tr>
+                  <th>Soldier</th>
+                  <td>
+                    <img src="./assets/pieces/rSoldier.svg" alt="red" width="30%">
+                    <img src="./assets/pieces/bSoldier.svg" alt="black" width="30%">
+                  </td>
+                  <td>
+                    <strong>S</strong> (red side) <br/>
+                    <strong>s</strong> (black side)
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="col-7">
+            <p>
+              Each FEN strings for a XiangQi boards contains info for all 10 rows of the board,
+              and <code class="snippet">'/'</code> is used to split between each row.
+            </p>
+
+            <p>
+              Within each row, the representation listed on the table is used to represent that
+              the piece is present in the row at that position. Any empty space before and after
+              the piece is denoted using numeric integer, with the number being the number of squares
+              that is empty. For example, <code class="snippet">'2C2'</code> would represent 2 spaces
+              before and after the red cannon on that specific row. Using this system, we get a starter
+              board represented as FEN string as follows:
+              <br/>
+              <code class="snippet">'RHEAGAEHR/9/1C5C1/S1S1S1S1S/9/9/s1s1s1s1s/1c5c1/9/rheagaehr'</code>
+            </p>
+          </div>
         </div>
       </div>
     </main>

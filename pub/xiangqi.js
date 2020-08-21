@@ -664,13 +664,17 @@
 
     /**
      *
-     * @param moveString {string} Standard XiangQi move notation.
+     * @param moveInput {string | Object} Standard XiangQi move notation.
      */
-    movePiece: function (moveString) {
-      const move = moveStringToObj(moveString);
-      if (typeof move === 'string') {
-        _reportError(move, this.config.reportError);
-        return;
+    movePiece: function (moveInput) {
+      if (typeof moveInput === 'string') {
+        const move = moveStringToObj(moveInput);
+        if (typeof move === 'string') {
+          _reportError(move, this.config.reportError);
+          return;
+        }
+      } else {
+        const move = { ...moveInput };
       }
 
       if (this.board.move(move)) {
