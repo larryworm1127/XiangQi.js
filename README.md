@@ -19,7 +19,7 @@ simply load the JavaScript file and CSS file into the web page:
 <link rel="stylesheet" href="path-to-xiangqi.css">
 ```
 
-Make sure to also include the assets folder that contains various content used
+Make sure to also include the `assets` folder that contains various content used
 by XiangQi.js under the same directory as the library files. And that should be it!
 Read the API Doc to see various configurations and API
 functions that XiangQi.js provides, or read examples page to see sample of API usage.
