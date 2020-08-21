@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="../lib/xiangqi.css">
     <link rel="stylesheet" href="css/examples.css">
     <script defer type="text/javascript" src="../lib/xiangqi.js"></script>
-    <script defer type="text/javascript" src="examples.js"></script>
+    <script defer type="text/javascript" src="js/examples.js"></script>
   </head>
   <body>
     <header class="masthead mb-auto">
@@ -38,6 +38,9 @@
               <li class="nav-item">
                 <a class="nav-link" href="apis.html">API Doc</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="assets/xiangqi.js.zip">Download</a>
+              </li>
             </ul>
           </div>
         </div>
@@ -49,8 +52,9 @@
         <div class="row">
           <div class="col-3">
             <nav class="example-nav" id="examplesNav">
-              <h4 id="groupHeader-1">Basic Usage</h4>
+              <h4 id="groupHeader-1">Getting Started</h4>
               <ul id="groupContainer-1" class="group-container">
+                <li><a>Basic Setup</a></li>
                 <li><a href="#emptyBoard">Empty Board</a></li>
                 <li><a href="#fullBoardStart">Start Position</a></li>
                 <li><a href="#midGameBoard">FEN String</a></li>
@@ -75,6 +79,34 @@
           </div>
 
           <div class="col-9">
+            <div class="row">
+              <div id="basicSetup" class="boardContainer">
+                <h3>
+                  Basic Setup
+                </h3>
+                <p>
+                  First, <a href="assets/xiangqi.js.zip">download</a> the library files and unzip the files to
+                  your desired location.
+                </p>
+                <p>
+                  Since XiangQi.js uses no external API, to use the XiangQi.js API, simply load
+                  the JavaScript file and CSS file into the web page:
+                </p>
+                <pre class="prettyprint">
+&lt;script type="text/javascript" src="path-to-xiangqi.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="path-to-xiangqi.css"&gt;
+                </pre>
+                <p>
+                  Make sure to also include the assets folder that contains various content used
+                  by XiangQi.js under the same directory as the library files. And that should be it!
+                  Read the <a href="apis.html">API Doc</a> to see various configurations and API
+                  functions that XiangQi.js provides, or read below to see examples of API usage.
+                </p>
+              </div>
+            </div>
+
+            <hr/>
+
             <div class="row">
               <div id="emptyBoard" class="boardContainer">
                 <h3>
@@ -479,6 +511,14 @@ document.getElementById('slider').addEventListener('change', event => {
         </div>
       </div>
     </main>
+
+    <hr/>
+
+    <footer>
+      <div class="inner">
+        <p>the code can be found on <a href="https://github.com/csc309-summer-2020/js-library-shile4">Github</a>.</p>
+      </div>
+    </footer>
   </body>
 
 </html>

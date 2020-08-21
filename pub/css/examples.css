@@ -44,6 +44,7 @@ h4 {
     font-size: 14px;
     margin: 0;
     padding: 15px 20px;
+    text-transform: none;
 }
 
 .example-nav ul {
@@ -86,6 +87,15 @@ h4 {
     border: 2px solid grey;
 }
 
+#basicSetup .prettyprint {
+    margin-left: 0;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px;
+    border: 2px solid grey;
+}
+
 #board1, #board2, #board3 {
     display: inline-block;
     margin-right: 5pt;
@@ -97,4 +107,8 @@ h4 {
 
 #size {
     margin-left: 20px;
+}
+
+.inner {
+    text-align: center;
 }

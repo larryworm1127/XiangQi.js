@@ -1,5 +1,6 @@
 #doc-container {
     margin-top: 2%;
+    margin-bottom: 40px;
 }
 
 .doc-section {
@@ -58,4 +59,8 @@
 .snippet a {
     color: inherit;
     text-decoration: none;
+}
+
+.inner {
+    text-align: center;
 }
